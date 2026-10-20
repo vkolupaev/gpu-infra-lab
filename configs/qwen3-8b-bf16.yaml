@@ -1,0 +1,23 @@
+# One file = one engine configuration. Change one variable per experiment, copy the file.
+model: Qwen/Qwen3-8B
+revision: "REPLACE_WITH_COMMIT_SHA" # quoted! curl -s https://huggingface.co/api/models/Qwen/Qwen3-8B | jq -r .sha
+model_params_b: 8.2                 # for the decode roofline sanity check
+
+serve:                              # passed 1:1 to `vllm serve` (true -> --flag, false -> --no-flag)
+  dtype: bfloat16
+  max-model-len: 4096
+  gpu-memory-utilization: 0.90
+  max-num-seqs: 256
+  max-num-batched-tokens: 8192
+  enable-prefix-caching: false      # random prompts share nothing; keep off for a clean baseline
+  seed: 0
+
+workload:
+  input_len: 1024
+  output_len: 256
+  concurrency: [1, 8, 32]
+  prompts_per_concurrency: 10       # num_prompts = max(min_prompts, 10 x concurrency)
+  min_prompts: 50
+  warmup_prompts: 16
+  ignore_eos: true                  # fixed output length -> comparable runs
+  seed: 0

@@ -1,0 +1,6 @@
+results/raw/**/*.nsys-rep
+results/raw/**/*.ncu-rep
+results/raw/**/*.sqlite
+__pycache__/
+.venv/
+*.env

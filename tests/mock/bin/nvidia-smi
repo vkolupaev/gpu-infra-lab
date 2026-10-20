@@ -1,0 +1,5 @@
+#!/bin/sh
+case "$1" in
+  -q) echo "==== fake nvidia-smi -q ====";;
+  *) echo "NVIDIA A100-SXM4-80GB, 81920, 400.00, 400.00, 1410, 1593, 4, 16, 575.57.08, Disabled";;
+esac

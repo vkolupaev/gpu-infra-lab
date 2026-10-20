@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+import sys, json, http.server, os, time
+a = sys.argv[1:]
+if a[0] == "serve":
+    class H(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200); self.end_headers()
+        def log_message(self, *x): pass
+    port = int(a[a.index("--port")+1]); print("args:", a, flush=True)
+    time.sleep(1)
+    http.server.HTTPServer(("127.0.0.1", port), H).serve_forever()
+elif a[:2] == ["bench", "serve"]:
+    c = int(a[a.index("--max-concurrency")+1]); n = int(a[a.index("--num-prompts")+1])
+    if "--save-result" in a:
+        d = a[a.index("--result-dir")+1]; f = a[a.index("--result-filename")+1]
+        out = 30.0 * c
+        res = {"duration": n*256/out, "completed": n, "request_throughput": out/256,
+               "output_throughput": out, "total_token_throughput": out*5,
+               "mean_ttft_ms": 50+c, "median_ttft_ms": 48+c, "p50_ttft_ms": 48+c, "p95_ttft_ms": 80+c, "p99_ttft_ms": 99+c,
+               "mean_tpot_ms": 11+c/4, "median_tpot_ms": 11+c/4, "p50_tpot_ms": 11+c/4, "p95_tpot_ms": 13+c/4, "p99_tpot_ms": 15+c/4,
+               "p50_itl_ms": 11, "p95_itl_ms": 14, "p99_itl_ms": 20, "mean_itl_ms": 11,
+               "p50_e2el_ms": 3000+c*10, "p95_e2el_ms": 3300+c*10, "p99_e2el_ms": 3500+c*10, "mean_e2el_ms": 3050}
+        json.dump(res, open(os.path.join(d, f), "w"))
+    print("bench ok", c, n)
