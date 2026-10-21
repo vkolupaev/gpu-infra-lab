@@ -1,6 +1,6 @@
 # One file = one engine configuration. Change one variable per experiment, copy the file.
 model: Qwen/Qwen3-8B
-revision: "REPLACE_WITH_COMMIT_SHA" # quoted! curl -s https://huggingface.co/api/models/Qwen/Qwen3-8B | jq -r .sha
+revision: "b968826d9c46dd6066d109eabc6255188de91218" # quoted! curl -s https://huggingface.co/api/models/Qwen/Qwen3-8B | jq -r .sha
 model_params_b: 8.2                 # for the decode roofline sanity check
 
 serve:                              # passed 1:1 to `vllm serve` (true -> --flag, false -> --no-flag)

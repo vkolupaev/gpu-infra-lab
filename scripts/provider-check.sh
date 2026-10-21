@@ -22,7 +22,7 @@ log "cpu: $(nproc) vCPU, $(free -g | awk '/Mem/{print $2}') GB RAM, $(lscpu | aw
 # 2. profiler counters (go/no-go for ncu); nsys tracing does not need counters
 if [ "${INSTALL_PROF:-0}" = 1 ]; then   # plain vLLM image: install pinned profilers on the fly
   apt-get update -qq && apt-get install -y -qq --no-install-recommends \
-    "${NSYS_PKG:-nsight-systems-cli}=${NSYS_VERSION:?}" "${NCU_PKG:-cuda-nsight-compute-12-9}=${NCU_VERSION:?}" > "$OUT/apt.txt" 2>&1
+    "${NSYS_PKG:-cuda-nsight-systems-12-9}=${NSYS_VERSION:?}" "${NCU_PKG:-cuda-nsight-compute-12-9}=${NCU_VERSION:?}" > "$OUT/apt.txt" 2>&1
   export PATH=/usr/local/cuda/bin:$PATH
 fi
 TEST='import torch; x=torch.randn(4096,4096,device="cuda"); y=x@x; torch.cuda.synchronize()'
