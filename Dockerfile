@@ -2,8 +2,8 @@
 # Lab image = official vLLM image (pinned by digest) + thin tooling layer.
 # Targets:  lab     -> runs + nsys CLI (small, default)
 #           lab-ncu -> lab + Nsight Compute (heavy, only for VM providers with counters)
-# Build:    docker build --target lab     -t ghcr.io/<user>/gpu-infra-lab:v0.32.0-cu129-<sha> .
-#           docker build --target lab-ncu -t ghcr.io/<user>/gpu-infra-lab:v0.32.0-cu129-<sha>-ncu .
+# Build:    docker build --target lab     -t ghcr.io/vkolupaev/gpu-infra-lab:v0.32.0-cu129-<sha> .
+#           docker build --target lab-ncu -t ghcr.io/vkolupaev/gpu-infra-lab:v0.32.0-cu129-<sha>-ncu .
 
 ARG VLLM_IMAGE=vllm/vllm-openai:v0.32.0-cu129@sha256:bc0445dac61accbf1c3b17fbb524a71eee0b1b32f55ba45952095e3be8991c3f
 

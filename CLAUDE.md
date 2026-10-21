@@ -67,7 +67,7 @@ Conventional Commits, imperative, subject <= 72 chars:
 - `Dockerfile`: `VLLM_IMAGE` digest, `NSYS_VERSION`, `NCU_VERSION` (from `apt-cache madison`
   inside the base image), `NSYS_PKG` if `nsight-systems-cli` is not available.
 - `configs/qwen3-8b-bf16.yaml`: `revision` (quoted HF commit sha).
-- Image name: `ghcr.io/<user>/gpu-infra-lab`.
+- Image name: `ghcr.io/vkolupaev/gpu-infra-lab`.
 
 ## Status
 Block 0 not started. Order of blocks: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
