@@ -63,11 +63,6 @@ Conventional Commits, imperative, subject <= 72 chars:
 - `notes/` - comparisons and decisions
 - `tests/mock/` - fake `vllm`, `nvidia-smi`, `huggingface_hub` for offline runs
 
-## Open placeholders (fill on Block 0, day 1)
-- `Dockerfile`: `VLLM_IMAGE` digest, `NSYS_VERSION`, `NCU_VERSION` (from `apt-cache madison`
-  inside the base image), `NSYS_PKG` if `nsight-systems-cli` is not available.
-- `configs/qwen3-8b-bf16.yaml`: `revision` (quoted HF commit sha).
-- Image name: `ghcr.io/vkolupaev/gpu-infra-lab`.
-
 ## Status
-Block 0 not started. Order of blocks: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
+Block 0 in progress: base image, profilers and model revision pinned;
+`lab` image built locally, not yet pushed to GHCR. Order of blocks: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
