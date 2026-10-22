@@ -51,7 +51,10 @@ df -h . | tee -a "$OUT/summary.txt"
 dd if=/dev/zero of=./ddtest bs=1M count=4096 oflag=direct 2>&1 | tail -1 | sed 's/^/disk write: /' | tee -a "$OUT/summary.txt"; rm -f ./ddtest
 REV=$(python3 -c "import yaml;print(yaml.safe_load(open('configs/qwen3-8b-bf16.yaml'))['revision'])")
 T0=$(date +%s)
-python3 -c "from huggingface_hub import snapshot_download as s; s('Qwen/Qwen3-8B', revision='$REV')" > "$OUT/hf.txt" 2>&1
-T1=$(date +%s); SZ=$(du -sb ~/.cache/huggingface/hub/models--Qwen--Qwen3-8B 2>/dev/null | cut -f1)
+# new huggingface_hub keeps big files in hub/blobs/ and symlinks them from the model dir,
+# so measure the snapshot path returned by snapshot_download, following symlinks (-L)
+SNAP=$(python3 -c "from huggingface_hub import snapshot_download as s; print(s('Qwen/Qwen3-8B', revision='$REV'))" 2> "$OUT/hf.txt" | tail -1)
+T1=$(date +%s); echo "snapshot: $SNAP" >> "$OUT/hf.txt"
+SZ=$( [ -n "$SNAP" ] && du -sbL "$SNAP" 2>/dev/null | cut -f1 ); SZ=${SZ:-0}
 log "hf download: $((T1-T0)) s, $((SZ/1000000)) MB, $(( SZ / ( (T1-T0>0 ? T1-T0 : 1) * 1000000 ) )) MB/s"
 log "done $(date -u +%FT%TZ). Now copy results/provider-check back and DESTROY the instance."
