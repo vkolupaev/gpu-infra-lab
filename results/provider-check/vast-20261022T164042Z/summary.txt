@@ -1,0 +1,16 @@
+== provider=vast price_per_hour=1.114/hour t_create=2026-10-22T16:19:50Z t_ssh_ready=2026-10-22T16:40:42Z
+name, memory.total [MiB], power.limit [W], power.max_limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], pcie.link.gen.max, pcie.link.width.max, driver_version, mig.mode.current
+NVIDIA A100-SXM4-80GB, 81920 MiB, 400.00 W, 500.00 W, 1410 MHz, 1593 MHz, 4, 16, 580.159.03, Disabled
+== cpu: 128 vCPU, 503 GB RAM, AMD EPYC 7513 32-Core Processor
+== ncu: NO (ERR_NVGPUCTRPERM)
+== nsys cuda trace: YES
+== nsys gpu-metrics: NO, see nsys-gm.txt
+RmProfilingAdminOnly: 1
+== mig enable attempt: Terminating early due to previous errors.
+Filesystem      Size  Used Avail Use% Mounted on
+overlay         100G  1.2G   99G   2% /
+disk write: 4294967296 bytes (4.3 GB, 4.0 GiB) copied, 1.50243 s, 2.9 GB/s
+== hf download: 133 s, 4 MB, 0 MB/s
+== done 2026-10-22T16:43:19Z. Now copy results/provider-check back and DESTROY the instance.
+== hf download (manual): 133 s, 16 GB, ~120 MB/s; script size calc was wrong (printed 4 MB)
+== hf download (corrected): 133 s, 16397 MB, 123 MB/s (script printed 4 MB: HF xet cache keeps blobs outside the model dir, du must follow symlinks)
