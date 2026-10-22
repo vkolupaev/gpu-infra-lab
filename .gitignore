@@ -4,3 +4,7 @@ results/raw/**/*.sqlite
 __pycache__/
 .venv/
 *.env
+push.log
+*.log
+# Raw tool outputs (e.g. server.log) must stay tracked
+!results/raw/**/*.log
