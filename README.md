@@ -16,6 +16,8 @@ throughput, latency (p50/p95/p99), TTFT, and cost per 1M tokens on rented GPUs.
 ## Reproduce a run
     python3 bench.py run --config configs/qwen3-8b-bf16.yaml --provider <name> --price-per-hour <usd>
 
+Images pushed before LAB_IMAGE was fixed carry the base vLLM ref in it: run `export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag> VLLM_BASE_IMAGE=<base ref@digest>` first.
+
 ## Commit rules
 Conventional Commits, English, imperative, subject <= 72 chars:
 `<type>(<scope>): <summary>`; types: feat, fix, refactor, build, docs, test, chore, exp.

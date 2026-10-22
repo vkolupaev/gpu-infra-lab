@@ -149,9 +149,13 @@ def software_info(image: str | None) -> dict:
         v = json.loads(sh([sys.executable, "-c", probe]) or "{}")
     except json.JSONDecodeError:
         v = {}
+    image = image or os.environ.get("LAB_IMAGE") or "unknown"
+    if "gpu-infra-lab" not in image:
+        print(f"WARNING: lab image is probably not set (LAB_IMAGE={image!r}); "
+              "pass --image or export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag>", file=sys.stderr)
     return {"vllm_version": v.get("vllm", "unknown"), "torch_version": v.get("torch"),
-            "cuda_runtime": v.get("cuda"),
-            "image": image or os.environ.get("LAB_IMAGE", "unknown")}
+            "cuda_runtime": v.get("cuda"), "image": image,
+            "base_image": os.environ.get("VLLM_BASE_IMAGE") or "unknown"}
 
 
 def serve_flags(serve: dict) -> list[str]:
@@ -411,7 +415,7 @@ TODO: expected outcome and why, written BEFORE looking at the results.
 |---|---|
 | Provider | {r0['provider']['name']} {r0['provider']['instance_type'] or ''}, ${r0['provider']['price_per_hour_usd']}/h ({r0['provider']['price_basis']}), sharing: {r0['provider']['gpu_sharing']} |
 | GPU | {hw['gpu_count']}x {hw['gpu_name']} ({hw['form_factor']}), {fmt(hw.get('memory_total_mib'))} MiB, power limit {fmt(hw.get('power_limit_w'))} W, driver {hw.get('driver_version')} |
-| Software | vLLM {r0['software']['vllm_version']}, torch {r0['software']['torch_version']}, CUDA {r0['software']['cuda_runtime']}, image `{r0['software']['image']}` |
+| Software | vLLM {r0['software']['vllm_version']}, torch {r0['software']['torch_version']}, CUDA {r0['software']['cuda_runtime']}, image `{r0['software']['image']}` (base `{r0['software'].get('base_image', 'unknown')}`) |
 | Model | `{r0['model']['id']}` @ `{r0['model']['revision'][:12]}`, precision {r0['model']['precision']} |
 | Engine | max_num_seqs={e['max_num_seqs']}, max_num_batched_tokens={e['max_num_batched_tokens']}, max_model_len={e['max_model_len']}, gpu_mem_util={e['gpu_memory_utilization']}, prefix_caching={e['enable_prefix_caching']} |
 | Workload | random, {w['input_len']} in / {w['output_len']} out tokens, ignore_eos={w['ignore_eos']}, closed loop (max-concurrency), seed={w['seed']} |
@@ -478,7 +482,7 @@ def main() -> None:
     r.add_argument("--gpu-sharing", default="none", help="none | mig:3g.40gb | mps:50 | timeslice:2")
     r.add_argument("--gpu-fraction", type=float, default=1.0, help="share of the price attributed to this run")
     r.add_argument("--form-factor", default=None, help="override autodetect: SXM | PCIe | NVL")
-    r.add_argument("--image", default=None, help="image ref@digest (default: $LAB_IMAGE)")
+    r.add_argument("--image", default=None, help="lab image ref, e.g. ghcr.io/vkolupaev/gpu-infra-lab:<tag> (default: $LAB_IMAGE)")
     r.add_argument("--concurrency", default=None, help="e.g. 1,8,32 (default: from config)")
     r.add_argument("--num-prompts", type=int, default=None, help="fixed count for every level")
     r.add_argument("--port", type=int, default=8000)
