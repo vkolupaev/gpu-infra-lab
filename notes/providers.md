@@ -37,9 +37,7 @@ matches the listed $0.014/h for 100 GB (100 x 0.10 / 730 h = $0.0137/h).
 ## Decision
 - Benchmark provider (default for Blocks 1-2): **Vast.ai**, because same A100 SXM 80GB
   as RunPod at ~38% lower price ($1.114/h vs $1.804/h), 2x more vCPU (32 vs 16 allocated), SSH
-  worked out of the box. RunPod BF16 GEMM was 9 pp lower (76% vs 85% of spec; power limit 400 W
-  with no headroom vs 500 W max on Vast); HBM was equal (~87%), so decode is unaffected,
-  prefill and large batches are. HF download is not an advantage: ~123 MB/s vs ~260 MB/s on
+  worked out of the box. HF download is not an advantage: ~123 MB/s vs ~260 MB/s on
   RunPod, but still ~2 min for 16 GB. Condition: marketplace hosts vary,
   so run hwcheck at the start of every session and record the machine id per run;
   SUSPICIOUS -> new host.
