@@ -1,0 +1,9 @@
+WARNING: Device-side CUDA Event completion trace is currently enabled.
+         This may increase runtime overhead and the likelihood of false
+         dependencies across CUDA Streams. If you wish to avoid this, please
+         disable the feature with --cuda-event-trace=false.
+Collecting data...
+Generating '/tmp/nsys-report-8db7.qdstrm'
+[1/1] [0%                          ] nsys-test.nsys-rep[1/1] [0%                          ] nsys-test.nsys-rep[1/1] [7%                          ] nsys-test.nsys-rep[1/1] [10%                         ] nsys-test.nsys-rep[1/1] [=======================96%  ] nsys-test.nsys-rep[1/1] [========================100%] nsys-test.nsys-rep[1/1] [========================100%] nsys-test.nsys-rep
+Generated:
+	/root/lab/results/provider-check/vast-20261022T164042Z/nsys-test.nsys-rep

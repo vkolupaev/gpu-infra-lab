@@ -1,0 +1,17 @@
+16G	/root/.cache/huggingface/hub
+632K	/root/.cache/huggingface/xet
+--- du -sh
+4.4M	/root/.cache/huggingface/hub/models--Qwen--Qwen3-8B
+--- du -sb
+4526093	/root/.cache/huggingface/hub/models--Qwen--Qwen3-8B
+--- du -sbL snapshot
+16397461266	/root/.cache/huggingface/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218
+--- blobs
+total 4444
+drwxr-xr-x 2 root root    4096 Oct 22 16:43 .
+drwxr-xr-x 5 root root      65 Oct 22 16:41 ..
+-rw-r--r-- 1 root root     239 Oct 22 16:41 20a8a9156fc8c3f25295ca067f61fdf120d517c5
+lrwxrwxrwx 1 root root      79 Oct 22 16:42 20c2d6366ab85c90786ccdd829cd2b9e7d30ef3b2ebbb998280e7e4014b542ff -> ../../blobs/00/00fc0074a30b3f49de8ac046752beeb14efe64c145ff83879c04888b6c1a51d8
+-rw-r--r-- 1 root root   32878 Oct 22 16:41 2b85c00f1b118961cd7a477e2bba0fe197a4ce1a
+-rw-r--r-- 1 root root 1671853 Oct 22 16:41 31349551d90c7606f325fe0f11bbb8bd5fa0d7c7
+lrwxrwxrwx 1 root root      79 Oct 22 16:43 31d6a825ae35f11fb85b195b4c42c146c051e446433125a215336abdf95cbf5f -> ../../blobs/d5/d5896122818183507065a14a89ab73d7c90784031154ad074896049c30f607d7

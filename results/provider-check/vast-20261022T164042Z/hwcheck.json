@@ -1,0 +1,11 @@
+{
+  "gpu_name": "NVIDIA A100-SXM4-80GB",
+  "hbm_copy_gbps": 1766,
+  "bf16_gemm_tflops": 265.4,
+  "h2d_pinned_gbps": 19.8,
+  "nvidia_smi_after_load": "4, 16, 1410 MHz, 82.05 W, 400.00 W, 26, 0x0000000000000000",
+  "hbm_pct_of_spec": 87,
+  "gemm_pct_of_spec": 85,
+  "verdict": "OK",
+  "h2d_note": "PCIe Gen4 x16 ~20-25 GB/s, Gen5 x16 ~40-50, Gen3 x16 or Gen4 x8 ~11-13"
+}
