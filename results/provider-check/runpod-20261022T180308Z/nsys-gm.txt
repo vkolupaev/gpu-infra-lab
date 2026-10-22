@@ -1,0 +1,7 @@
+Illegal --gpu-metrics-devices usage.
+None of the installed GPUs are supported:
+
+usage: nsys profile [<args>] [application] [<application args>]
+Try 'nsys profile --help' for more information.
+	Ampere GA100 | NVIDIA A100-SXM4-80GB PCI[0000:c1:00.0] - Insufficient privilege, see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+See the user guide: https://docs.nvidia.com/nsight-systems/UserGuide/index.html#gpu-metrics

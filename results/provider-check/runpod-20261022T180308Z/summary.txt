@@ -1,0 +1,15 @@
+== provider=runpod price_per_hour=1.804 t_create=2026-10-22T17:40:16Z t_ssh_ready=2026-10-22T18:03:08Z
+name, memory.total [MiB], power.limit [W], power.max_limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], pcie.link.gen.max, pcie.link.width.max, driver_version, mig.mode.current
+NVIDIA A100-SXM4-80GB, 81920 MiB, 400.00 W, 400.00 W, 1410 MHz, 1593 MHz, 4, 16, 595.91.07, Disabled
+== cpu: 256 vCPU, 2003 GB RAM, AMD EPYC 7763 64-Core Processor
+== ncu: NO (ERR_NVGPUCTRPERM)
+== nsys cuda trace: YES
+== nsys gpu-metrics: NO, see nsys-gm.txt
+RmProfilingAdminOnly: 1
+== mig enable attempt: Terminating early due to previous errors.
+Filesystem      Size  Used Avail Use% Mounted on
+overlay         100G  1.3G   99G   2% /
+disk write: 4294967296 bytes (4.3 GB, 4.0 GiB) copied, 1.11399 s, 3.9 GB/s
+== hf download: 63 s, 16397 MB, 260 MB/s
+== done 2026-10-22T18:04:42Z. Now copy results/provider-check back and DESTROY the instance.
+== note: pod restarted once to expose TCP 22 (proxy SSH has no pipe); PUBLIC_KEY was empty, sshd started by hand via proxy SSH; t_ssh_ready includes both
