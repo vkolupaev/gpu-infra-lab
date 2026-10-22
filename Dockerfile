@@ -2,17 +2,20 @@
 # Lab image = official vLLM image (pinned by digest) + thin tooling layer.
 # Targets:  lab     -> runs + nsys CLI (small, default)
 #           lab-ncu -> lab + Nsight Compute (heavy, only for VM providers with counters)
-# Build:    docker build --target lab     -t ghcr.io/vkolupaev/gpu-infra-lab:v0.32.0-cu129-<sha> .
-#           docker build --target lab-ncu -t ghcr.io/vkolupaev/gpu-infra-lab:v0.32.0-cu129-<sha>-ncu .
+# Build:    TAG=ghcr.io/vkolupaev/gpu-infra-lab:v0.32.0-cu129-$(git rev-parse --short HEAD)
+#           docker build --target lab     --build-arg LAB_IMAGE=$TAG     -t $TAG .
+#           docker build --target lab-ncu --build-arg LAB_IMAGE=$TAG-ncu -t $TAG-ncu .
+# VLLM_BASE_IMAGE = what we build FROM; LAB_IMAGE = this image's own ref (bench.py records both).
+# Our digest is unknown before push; the tag with the git sha is enough.
 
-ARG VLLM_IMAGE=vllm/vllm-openai:v0.32.0-cu129@sha256:bc0445dac61accbf1c3b17fbb524a71eee0b1b32f55ba45952095e3be8991c3f
+ARG VLLM_BASE_IMAGE=vllm/vllm-openai:v0.32.0-cu129@sha256:bc0445dac61accbf1c3b17fbb524a71eee0b1b32f55ba45952095e3be8991c3f
 
-FROM ${VLLM_IMAGE} AS lab
-ARG VLLM_IMAGE
+FROM ${VLLM_BASE_IMAGE} AS lab
+ARG VLLM_BASE_IMAGE
 # Exact versions from `apt-cache madison <pkg>` inside the base image (day 1).
 ARG NSYS_PKG=cuda-nsight-systems-12-9
 ARG NSYS_VERSION=12.9.2-1
-ENV LAB_IMAGE=${VLLM_IMAGE} \
+ENV VLLM_BASE_IMAGE=${VLLM_BASE_IMAGE} \
     VLLM_WORKER_MULTIPROC_METHOD=spawn \
     DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
@@ -23,6 +26,9 @@ COPY scripts/start.sh /usr/local/bin/lab-start
 # The official image starts `vllm serve` with no args; a lab container must idle instead.
 ENTRYPOINT []
 CMD ["/usr/local/bin/lab-start"]
+# Last, so a new git sha in the tag does not invalidate the apt layers.
+ARG LAB_IMAGE=
+ENV LAB_IMAGE=${LAB_IMAGE}
 
 FROM lab AS lab-ncu
 ARG NCU_PKG=cuda-nsight-compute-12-9
@@ -31,3 +37,5 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ${NCU_PKG}=${NCU_VERSION} \
  && rm -rf /var/lib/apt/lists/*
 ENV PATH=/usr/local/cuda/bin:${PATH}
+ARG LAB_IMAGE=
+ENV LAB_IMAGE=${LAB_IMAGE}
