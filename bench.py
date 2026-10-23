@@ -63,6 +63,12 @@ REQUIRED = {  # dotted paths that must be present (value may be null only where 
     "results.ttft_ms.p50", "results.e2el_ms.p50", "results.e2el_ms.p95", "results.e2el_ms.p99",
     "derived.usd_per_1m_output_tokens", "derived.usd_per_1m_total_tokens",
 }
+NON_NULL = {  # must also be non-empty (None/0 means the vLLM result keys did not match)
+    "results.completed", "results.output_throughput_tps", "results.total_throughput_tps",
+    "results.ttft_ms.p50", "results.ttft_ms.p95", "results.tpot_ms.p50",
+    "results.e2el_ms.p50", "results.e2el_ms.p95",
+    "derived.usd_per_1m_output_tokens", "derived.usd_per_1m_total_tokens",
+}
 
 
 # ----------------------------------------------------------------------------- helpers
@@ -208,6 +214,7 @@ def flatten(d: dict, prefix: str = "") -> dict:
 def validate(rec: dict) -> list[str]:
     flat = flatten(rec)
     missing = sorted(p for p in REQUIRED if p not in flat)
+    missing += sorted(f"{p}=empty" for p in NON_NULL if p not in missing and not flat.get(p))
     if rec.get("schema_version") != SCHEMA_VERSION:
         missing.append(f"schema_version!={SCHEMA_VERSION}")
     return missing
