@@ -159,9 +159,15 @@ def software_info(image: str | None) -> dict:
     image = image or os.environ.get("LAB_IMAGE") or "unknown"
     if "gpu-infra-lab" not in image:
         print(f"WARNING: lab image is probably not set (LAB_IMAGE={image!r}); "
-              "pass --image or export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag>", file=sys.stderr)
+              "pass --image or export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag>@sha256:<digest>",
+              file=sys.stderr)
+    elif "@sha256:" not in image:
+        # the image cannot know its own digest before push: it comes from LAB_IMAGE on the host
+        print(f"WARNING: lab image has no digest (LAB_IMAGE={image!r}); "
+              "export LAB_IMAGE=<tag>@sha256:<digest> from notes/images.md", file=sys.stderr)
+    digest = image.split("@", 1)[1] if "@sha256:" in image else None
     return {"vllm_version": v.get("vllm", "unknown"), "torch_version": v.get("torch"),
-            "cuda_runtime": v.get("cuda"), "image": image,
+            "cuda_runtime": v.get("cuda"), "image": image, "image_digest": digest,
             "base_image": os.environ.get("VLLM_BASE_IMAGE") or "unknown"}
 
 
