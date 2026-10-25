@@ -14,9 +14,19 @@ throughput, latency (p50/p95/p99), TTFT, and cost per 1M tokens on rented GPUs.
 - `CLAUDE.md` - working rules for Claude Code in this repository
 
 ## Reproduce a run
+On the GPU host, inside the lab image, export the image ref with its digest from
+[`notes/images.md`](notes/images.md), then run:
+
+    export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag>@<digest>
     python3 bench.py run --config configs/qwen3-8b-bf16.yaml --provider <name> --price-per-hour <usd>
 
-Images pushed before LAB_IMAGE was fixed carry the base vLLM ref in it: run `export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag> VLLM_BASE_IMAGE=<base ref@digest>` first.
+`bench.py run` checks the hardware first (`scripts/hwcheck.py` -> `hwcheck.json`; it stops
+unless the verdict is OK, `--allow-suspicious` continues) and logs `nvidia-smi` once a second
+to `gpu-monitor.csv` while the server runs. Raw outputs go to `results/raw/<group_id>/`.
+
+Plots are not drawn on the host. After copying `results/` back, on the laptop:
+
+    python3 scripts/plot_gpu_monitor.py results/raw/<group_id>
 
 ## Commit rules
 Conventional Commits, English, imperative, subject <= 72 chars:
