@@ -1,5 +1,15 @@
 #!/bin/sh
 case "$1" in
-  -q) echo "==== fake nvidia-smi -q ====";;
+  -q) printf '%s\n' "==== fake nvidia-smi -q ====" \
+       "    Product Name                          : NVIDIA A100-SXM4-80GB" \
+       "        Current Power Limit               : 400.00 W" \
+       "    Max Clocks" "        Graphics                          : 1410 MHz" \
+       "        SM                                : 1410 MHz";;
+  --query-gpu=timestamp,*)  # bench.py GPU monitor: header, then one sample per second until killed
+    echo "timestamp, utilization.gpu [%], utilization.memory [%], memory.used [MiB], power.draw [W], temperature.gpu, clocks.current.sm [MHz], clocks.current.memory [MHz], clocks_event_reasons.active"
+    while :; do
+      echo "$(date -u '+%Y/%m/%d %H:%M:%S.%3N'), 100 %, 82 %, 70000 MiB, 340.00 W, 50, 1410 MHz, 1593 MHz, 0x0000000000000000"
+      sleep 1
+    done;;
   *) echo "NVIDIA A100-SXM4-80GB, 81920, 400.00, 400.00, 1410, 1593, 4, 16, 575.57.08, Disabled";;
 esac

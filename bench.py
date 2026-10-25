@@ -6,6 +6,7 @@ What this script does (and vllm bench does NOT):
   * launches `vllm serve` from a YAML config, so recorded engine params == used params
   * runs a warmup, then one `vllm bench serve` per concurrency level
   * captures environment: GPU (nvidia-smi), driver, vLLM/torch/CUDA versions, image, git commit
+  * runs scripts/hwcheck.py before the model download and logs nvidia-smi once per second
   * normalizes vLLM's result JSON into ONE fixed record schema (SCHEMA_VERSION)
   * computes derived economics: $ per 1M output / total tokens, decode roofline floor
   * appends records to results/runs.jsonl, keeps raw files, drafts an experiment note
@@ -207,6 +208,50 @@ def stop_group(proc: subprocess.Popen, timeout_s: int = 60) -> None:
             pass
 
 
+MONITOR_FIELDS = ("timestamp,utilization.gpu,utilization.memory,memory.used,power.draw,"
+                  "temperature.gpu,clocks.sm,clocks.mem,clocks_throttle_reasons.active")
+
+
+def run_hwcheck(raw_dir: pathlib.Path, skip: bool, allow_suspicious: bool) -> dict:
+    """scripts/hwcheck.py -> raw_dir/hwcheck.json; stop unless the verdict is OK."""
+    if skip:
+        print("WARNING: hwcheck skipped (--skip-hwcheck)", file=sys.stderr)
+        return {"hbm_copy_gbps": None, "bf16_gemm_tflops": None, "hwcheck_verdict": None}
+    p = subprocess.run([sys.executable, str(ROOT / "scripts" / "hwcheck.py")], capture_output=True, text=True)
+    if p.returncode != 0:
+        raise SystemExit(f"hwcheck failed with code {p.returncode}:\n{p.stderr[-2000:]}")
+    (raw_dir / "hwcheck.json").write_text(p.stdout)
+    hc = json.loads(p.stdout)
+    out = {"hbm_copy_gbps": hc.get("hbm_copy_gbps"), "bf16_gemm_tflops": hc.get("bf16_gemm_tflops"),
+           "hwcheck_verdict": hc.get("verdict")}  # no verdict: GPU not in hwcheck SPEC
+    print(f"hwcheck: HBM {out['hbm_copy_gbps']} GB/s, BF16 GEMM {out['bf16_gemm_tflops']} TFLOPS, "
+          f"verdict {out['hwcheck_verdict']}")
+    if out["hwcheck_verdict"] != "OK" and not allow_suspicious:
+        raise SystemExit(f"hwcheck verdict is {out['hwcheck_verdict']!r}, see {raw_dir / 'hwcheck.json'}. "
+                         "Rent another host or pass --allow-suspicious.")
+    return out
+
+
+def start_monitor(path: pathlib.Path) -> subprocess.Popen | None:
+    try:
+        with path.open("w") as f:
+            return subprocess.Popen(["nvidia-smi", f"--query-gpu={MONITOR_FIELDS}", "--format=csv", "-l", "1"],
+                                    stdout=f, stderr=subprocess.STDOUT, start_new_session=True)
+    except OSError as e:
+        print(f"WARNING: GPU monitor not started: {e}", file=sys.stderr)
+        return None
+
+
+def stop_monitor(mon: subprocess.Popen | None) -> None:
+    if mon is None:
+        return
+    if mon.poll() is not None:
+        print(f"WARNING: nvidia-smi monitor exited by itself with code {mon.returncode}; "
+              "gpu-monitor.csv may be incomplete", file=sys.stderr)
+        return
+    stop_group(mon, timeout_s=10)
+
+
 def pct(res: dict, metric: str) -> dict:
     g = lambda k: res.get(k)  # noqa: E731
     return {"mean": g(f"mean_{metric}_ms"),
@@ -338,6 +383,8 @@ def cmd_run(args) -> None:
     raw_dir.mkdir(parents=True, exist_ok=True)
     (raw_dir / "config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
     (raw_dir / "nvidia-smi-q.txt").write_text(sh(["nvidia-smi", "-q"]))
+    # 0. is the GPU what the listing says? (before the download, so a bad host costs minutes)
+    hw.update(run_hwcheck(raw_dir, args.skip_hwcheck, args.allow_suspicious))
 
     # 1. pinned model snapshot
     from huggingface_hub import snapshot_download
@@ -351,9 +398,11 @@ def cmd_run(args) -> None:
     serve = ["vllm", "serve", model_path, "--served-model-name", cfg["model"],
              "--port", str(port), *serve_flags(cfg["serve"])]
     (raw_dir / "serve_cmd.txt").write_text(" ".join(serve) + "\n")
-    with log.open("w") as lf:
-        proc = subprocess.Popen(serve, stdout=lf, stderr=subprocess.STDOUT, start_new_session=True)
+    mon = start_monitor(raw_dir / "gpu-monitor.csv")
+    proc = None
     try:
+        with log.open("w") as lf:
+            proc = subprocess.Popen(serve, stdout=lf, stderr=subprocess.STDOUT, start_new_session=True)
         ready_s = wait_ready(port, proc, args.ready_timeout, log)
         print(f"server ready in {ready_s:.0f}s")
         # 3. warmup (not recorded)
@@ -378,7 +427,9 @@ def cmd_run(args) -> None:
             with (RESULTS / "runs.jsonl").open("a") as f:
                 f.write(json.dumps(rec) + "\n")
     finally:
-        stop_group(proc)  # a crashed server must surface its own error, not ProcessLookupError
+        if proc is not None:
+            stop_group(proc)  # a crashed server must surface its own error, not ProcessLookupError
+        stop_monitor(mon)
     note = draft_note(records, cfg, args)
     print(f"\n{len(records)} records -> results/runs.jsonl\nexperiment note -> {note}")
 
@@ -407,6 +458,11 @@ def draft_note(records: list[dict], cfg: dict, args) -> pathlib.Path:
         f"| {fmt(r['derived']['usd_per_1m_output_tokens'], 3)} "
         f"| {fmt(r['derived']['usd_per_1m_total_tokens'], 3)} | {r['results']['completed']} |"
         for r in records)
+    raw_dir = ROOT / r0["raw"]["dir"]
+    raw_files = ", ".join(f"`{f}`" for f in ("gpu-monitor.csv", "nvidia-smi-q.txt", "hwcheck.json")
+                          if (raw_dir / f).exists()) or "none"
+    hwcheck = (f"HBM copy {hw.get('hbm_copy_gbps')} GB/s, BF16 GEMM {hw.get('bf16_gemm_tflops')} TFLOPS, "
+               f"verdict {hw.get('hwcheck_verdict')}") if hw.get("hbm_copy_gbps") is not None else "skipped"
     floor = r0["derived"]["decode_floor_ms_per_token"]
     tpot_c1 = next((r["results"]["tpot_ms"]["p50"] for r in records if r["workload"]["concurrency"] == 1), None)
     sanity = (f"Decode floor (weights / peak HBM bandwidth): **{floor} ms/token**. "
@@ -436,6 +492,7 @@ TODO: expected outcome and why, written BEFORE looking at the results.
 | Model | `{r0['model']['id']}` @ `{r0['model']['revision'][:12]}`, precision {r0['model']['precision']} |
 | Engine | max_num_seqs={e['max_num_seqs']}, max_num_batched_tokens={e['max_num_batched_tokens']}, max_model_len={e['max_model_len']}, gpu_mem_util={e['gpu_memory_utilization']}, prefix_caching={e['enable_prefix_caching']} |
 | Workload | random, {w['input_len']} in / {w['output_len']} out tokens, ignore_eos={w['ignore_eos']}, closed loop (max-concurrency), seed={w['seed']} |
+| Monitoring | raw files {raw_files} (nvidia-smi 1 sample/s); hwcheck: {hwcheck}; plots: `python3 scripts/plot_gpu_monitor.py {r0['raw']['dir']}` |
 
 ## Results (auto)
 | Concurrency | Out tok/s | Total tok/s | TTFT p50/p95 ms | TPOT p50 ms | E2E p50/p95/p99 ms | $/1M out | $/1M total | n |
@@ -506,6 +563,8 @@ def main() -> None:
     r.add_argument("--ready-timeout", type=int, default=1200)
     r.add_argument("--tag", default=None)
     r.add_argument("--note", default=None)
+    r.add_argument("--skip-hwcheck", action="store_true", help="no scripts/hwcheck.py (mock runs only)")
+    r.add_argument("--allow-suspicious", action="store_true", help="continue when the hwcheck verdict is not OK")
     r.add_argument("--extra", type=json.loads, default=None, help='free-form JSON, e.g. \'{"host_id": 123}\'')
     r.set_defaults(func=cmd_run)
     v = sub.add_parser("validate")
