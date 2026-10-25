@@ -22,11 +22,11 @@ Date: 2026-10-22. Card class: A100 80GB, 1 GPU. Raw data: `results/provider-chec
 | MI300X listed? price (for 5.3) | No: no AMD MI* cards in the listing on 2026-10-22 (only B300, B300 PC, GB300 came up) | Yes: MI300X 192 GB VRAM, $2.39/h per GPU as listed on 2026-10-22 (basis not recorded), up to 8 GPUs per pod; also MI350X 294 GB VRAM, $5.49/h per GPU, up to 8 per pod | |
 
 [^vast-hf]: Size from `du -sbL` on the snapshot path (`hf-du.txt`). The `hf download` line in
-`summary.txt` (4 MB) came from the old script, which measured symlinks only; fixed in 21efb00.
+`summary.txt` (4 MB) came from the old script, which measured symlinks only; fixed in ce7bc32.
 [^vast-billing]: Vast.ai docs, https://docs.vast.ai/guides/instances/pricing (read 2026-10-22): "Storage charges continue even when instances are stopped. Delete instances completely to cease storage billing."
 [^runpod-listing]: Listing: 1x A100 SXM 80GB, 117 GB RAM, 16 vCPU, host CUDA 13.2 (driver 595.91.07 in `nvidia-smi-q.txt`).
 [^runpod-ssh]: RunPod setup gotchas: proxy SSH (ssh.runpod.io) has no pipe/PTY for tar -> expose TCP 22 and use direct
-SSH; PUBLIC_KEY was empty in the custom image, sshd did not start (fixed in 8579dd9, image not rebuilt yet).
+SSH; PUBLIC_KEY was empty in the custom image, sshd did not start (fixed in ffc31b8, image not rebuilt yet).
 [^runpod-cpu]: Allocated vCPU: 16 on RunPod vs 32 on Vast (Vast listing: "32.0/128 CPU, 129/516 GB"), 2x; this
 matters for high-concurrency benchmarks (client and tokenizer threads share the CPU with vLLM). In both
 containers `nproc` and `free` show the whole host, not the allocation.
