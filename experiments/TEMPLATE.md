@@ -17,6 +17,7 @@ model @ revision, precision, engine params, workload. Link to the config file.
 
 ## Results
 Table with the numbers. Units in headers. Sample size per row.
+In prose write percentiles as p50@TPOT = 11.2 ms (see CLAUDE.md).
 
 ## Sanity check
 Compare with a first-principles bound (bandwidth, FLOPs, memory). Explain the gap.

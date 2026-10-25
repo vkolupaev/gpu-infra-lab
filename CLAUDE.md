@@ -41,6 +41,10 @@ copy its private context (employer, career notes) into this repo.
 - One variable changes per experiment; each config is its own file in `configs/`.
 - `--ignore-eos`, closed loop (`--max-concurrency`) unless the experiment says otherwise.
 - p99 from fewer than 200 requests is reported as approximate (`p99_reliable: false`).
+- Percentiles in prose (experiment notes, notes, commit messages):
+  `p<N>@<METRIC> = <value> <unit>`, e.g. `p50@TPOT = 11.2 ms`, `p95@TTFT = 1968 ms`,
+  `p99@E2EL = 6430 ms`; mean: `mean@TPOT`. Metric names as in vLLM: TTFT, TPOT, ITL,
+  E2EL. Auto-generated `bench.py` Results tables keep their column headers.
 - Model revision pinned as a quoted commit sha; base image pinned by digest.
 - Every result gets a sanity check against a first-principles bound
   (memory bandwidth, FLOPs, memory capacity) in the experiment note.
