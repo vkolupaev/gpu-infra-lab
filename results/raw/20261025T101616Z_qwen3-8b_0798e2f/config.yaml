@@ -1,0 +1,23 @@
+model: Qwen/Qwen3-8B
+revision: b968826d9c46dd6066d109eabc6255188de91218
+model_params_b: 8.2
+serve:
+  dtype: bfloat16
+  max-model-len: 4096
+  gpu-memory-utilization: 0.9
+  max-num-seqs: 256
+  max-num-batched-tokens: 8192
+  enable-prefix-caching: false
+  seed: 0
+workload:
+  input_len: 1024
+  output_len: 256
+  concurrency:
+  - 1
+  - 8
+  - 32
+  prompts_per_concurrency: 10
+  min_prompts: 50
+  warmup_prompts: 16
+  ignore_eos: true
+  seed: 0

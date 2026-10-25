@@ -1,0 +1,1 @@
+vllm serve /root/.cache/huggingface/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218 --served-model-name Qwen/Qwen3-8B --port 8000 --dtype bfloat16 --max-model-len 4096 --gpu-memory-utilization 0.9 --max-num-seqs 256 --max-num-batched-tokens 8192 --no-enable-prefix-caching --seed 0
