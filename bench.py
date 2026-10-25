@@ -193,6 +193,20 @@ def wait_ready(port: int, proc: subprocess.Popen, timeout_s: int, log: pathlib.P
     raise SystemExit(f"server not ready after {timeout_s}s, see {log}")
 
 
+def stop_group(proc: subprocess.Popen, timeout_s: int = 60) -> None:
+    """SIGTERM the process group, SIGKILL after timeout. A group that already exited is fine."""
+    try:
+        os.killpg(proc.pid, signal.SIGTERM)
+        proc.wait(timeout=timeout_s)
+    except ProcessLookupError:
+        pass
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
 def pct(res: dict, metric: str) -> dict:
     g = lambda k: res.get(k)  # noqa: E731
     return {"mean": g(f"mean_{metric}_ms"),
@@ -364,11 +378,7 @@ def cmd_run(args) -> None:
             with (RESULTS / "runs.jsonl").open("a") as f:
                 f.write(json.dumps(rec) + "\n")
     finally:
-        os.killpg(proc.pid, signal.SIGTERM)
-        try:
-            proc.wait(timeout=60)
-        except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
+        stop_group(proc)  # a crashed server must surface its own error, not ProcessLookupError
     note = draft_note(records, cfg, args)
     print(f"\n{len(records)} records -> results/runs.jsonl\nexperiment note -> {note}")
 

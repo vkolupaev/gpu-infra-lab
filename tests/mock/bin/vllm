@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 import sys, json, http.server, os, time
 a = sys.argv[1:]
-if a[0] == "serve":
+if a[0] == "serve" and os.environ.get("MOCK_SERVE_FAIL") == "1":
+    print("Traceback (most recent call last):\n  File \"vllm/multimodal/__init__.py\", line 1\n"
+          "OSError: libnvrtc.so.13: cannot open shared object file (mock)", flush=True)
+    sys.exit(1)
+elif a[0] == "serve":
     class H(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(200); self.end_headers()
