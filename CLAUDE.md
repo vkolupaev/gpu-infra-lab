@@ -52,10 +52,13 @@ copy its private context (employer, career notes) into this repo.
   Question and Hypothesis are written before results are looked at.
 
 ## Commits
-Conventional Commits, imperative, subject <= 72 chars:
-`<type>(<scope>): <summary>`; types: feat, fix, refactor, build, docs, test, chore, exp.
-`exp` bodies carry the key number with its conditions and end with
-`Run-Group: <group_id>`.
+- Conventional Commits, imperative, subject <= 72 chars:
+  `<type>(<scope>): <summary>`; types: feat, fix, refactor, build, docs, test, chore, exp.
+- `exp` bodies carry the key number with its conditions and end with
+  `Run-Group: <group_id>`.
+- Stage explicit paths in `exp` commits (`git add results/runs.jsonl results/raw/<group_id>
+  experiments/<note>.md`), never `git add -A` or `git add .`: raw directories with no records
+  in `runs.jsonl` stay untracked unless an experiment note or `notes/` refers to them.
 
 ## Layout (minimal; add a directory only when a file needs it)
 - `Dockerfile` - targets `lab` (vLLM + nsys) and `lab-ncu` (+ Nsight Compute)
