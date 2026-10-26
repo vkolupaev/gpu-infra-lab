@@ -56,6 +56,11 @@ On the GPU host, inside the lab image, export the image ref with its digest from
 unless the verdict is OK, `--allow-suspicious` continues) and logs `nvidia-smi` once a second
 to `gpu-monitor.csv` while the server runs. Raw outputs go to `results/raw/<group_id>/`.
 
+Copy `results/` back to the laptop before destroying the instance, also when a run fails:
+if the server fails before the first record, its `server.log` is the only copy of the error.
+Raw directories with no records in `runs.jsonl` are committed only when an experiment note
+or a file in `notes/` refers to them as evidence.
+
 Plots are not drawn on the host. After copying `results/` back, on the laptop:
 
     python3 scripts/plot_gpu_monitor.py results/raw/<group_id>
