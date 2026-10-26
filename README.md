@@ -3,6 +3,38 @@
 Reproducible measurements of LLM inference systems and their economics:
 throughput, latency (p50/p95/p99), TTFT, and cost per 1M tokens on rented GPUs.
 
+## Latest result
+Qwen3-8B (`Qwen/Qwen3-8B` @ `b968826d9c46`, BF16) on 1x A100-SXM4-80GB (SXM, power limit 400 W),
+vLLM 0.32.0 with default engine settings (not tuned); random prompts, 1024 input / 256 output
+tokens, closed loop at fixed concurrency; on-demand $1.114/h. Measured 2026-10-25.
+
+| Concurrency | Out tok/s | TTFT p50/p95 ms | TPOT p50 ms | $/1M out |
+|---|---|---|---|---|
+| 1 | 87 | 86 / 90 | 11.2 | 3.563 |
+| 8 | 568 | 485 / 538 | 12.3 | 0.545 |
+| 32 | 1346 | 1334 / 1968 | 18.5 | 0.230 |
+
+- At C=1 decode is memory-bound: every step reads all weights for one token; prefill is ~3%
+  of request time.
+- C=8 -> C=32 gives 2.37x output, not 4x: batching shares only the weight reads; prefill and
+  KV-cache reads belong to each request and grow linearly with concurrency.
+- Closed loop with `--request-rate inf` and fixed lengths keeps requests synchronized in waves,
+  so TTFT here is a worst case, not steady state.
+
+[Full experiment note](experiments/2026-10-25-first-number.md)
+
+## How numbers are produced
+- Question and hypothesis, with falsification criteria, are committed before the run in a
+  separate commit.
+- Code is committed before the run and every record stores its git commit; results arrive
+  afterwards in a separate `exp(...)` commit.
+- Every result is checked against a first-principles bound: memory bandwidth, FLOPs or capacity.
+- Raw tool outputs are kept in `results/raw/<group_id>/`, so derived fields can be recomputed
+  without renting a GPU again.
+- One variable changes per experiment; each engine configuration is its own file in `configs/`.
+- p99 from fewer than 200 requests is flagged as approximate (`p99_reliable: false`).
+- Model revision is pinned by commit sha, the base image by digest.
+
 ## Layout
 - `Dockerfile` - lab image: pinned official vLLM image + profiling tools
 - `bench.py` - runs `vllm serve` + `vllm bench serve`, writes one record per run (schema v1)
@@ -55,3 +87,5 @@ Conventional Commits, English, imperative, subject <= 72 chars:
   and `Run-Group: <group_id>` in the footer.
 - Never amend or force-push a commit that a record points to.
 - No employer data in this repository.
+
+Status: Block 0 closed on 2026-10-25; next is Block 1. Block order: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
