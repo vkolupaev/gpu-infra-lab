@@ -213,6 +213,9 @@ points above 400 W are instantaneous readings, the driver regulates the average.
 - Hypothesis TPOT at C=8/C=32 overestimated: prefill is concentrated at the wave start (in TTFT)
   instead of being spread over decode steps.
 - Official vLLM v0.32.0-cu129 image ships a cu13 torchcodec build; vllm serve fails at import.
+  Tracked upstream in [vllm-project/vllm#63121](https://github.com/vllm-project/vllm/issues/63121);
+  the import crash is fixed on main by [#61090](https://github.com/vllm-project/vllm/pull/61090),
+  not in v0.32.0.
 - bench.py masks a crashed server with ProcessLookupError from os.killpg.
 
 ## Context: reference points
