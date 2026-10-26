@@ -17,6 +17,8 @@ model @ revision, precision, engine params, workload. Link to the config file.
 
 ## Results
 Table with the numbers. Units in headers. Sample size per row.
+One summary table: rows are sweep points, columns are the same metrics (scripts/table.py).
+More than two points: at least one figure (scripts/plot_sweep.py).
 In prose write percentiles as p50@TPOT = 11.2 ms (see CLAUDE.md).
 
 ## Sanity check
