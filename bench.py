@@ -22,6 +22,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import atexit
 import csv
 import datetime as dt
 import json
@@ -387,6 +388,12 @@ def cmd_run(args) -> None:
                 f"{cfg['model'].split('/')[-1].lower()}_{git['commit'][:7]}")
     raw_dir = RESULTS / "raw" / group_id
     raw_dir.mkdir(parents=True, exist_ok=True)
+    # atexit runs after Python prints the error (SystemExit message or traceback) and keeps its exit code
+    def remind() -> None:
+        sys.stdout.flush()  # a piped stdout is block-buffered and flushed only after atexit
+        print(f"raw outputs kept in results/raw/{group_id}/ - copy them off the host before destroying it",
+              file=sys.stderr, flush=True)
+    atexit.register(remind)
     (raw_dir / "config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
     (raw_dir / "nvidia-smi-q.txt").write_text(sh(["nvidia-smi", "-q"]))
     # 0. is the GPU what the listing says? (before the download, so a bad host costs minutes)
@@ -436,6 +443,7 @@ def cmd_run(args) -> None:
         if proc is not None:
             stop_group(proc)  # a crashed server must surface its own error, not ProcessLookupError
         stop_monitor(mon)
+    atexit.unregister(remind)
     note = draft_note(records, cfg, args)
     print(f"\n{len(records)} records -> results/runs.jsonl\nexperiment note -> {note}")
 
