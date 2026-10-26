@@ -42,6 +42,11 @@ each line holds the swept variable, the metrics with units in the key name
 it splits on a comma not followed by a space, so `p50@TTFT, ms` stays one label.
 `raw:<key>` reads a field of the raw `vllm bench serve` result of a bench record.
 
+    python3 scripts/plot_sweep.py results/runs.jsonl --group <group_id> --logx --out <png>
+
+One panel per `--y`, panels share the X axis; `+` puts metrics of the same unit on one
+panel. `--x` can be any metric, e.g. `--x results.output_throughput_tps --y results.ttft_ms.p95`.
+
 ## Commit rules
 Conventional Commits, English, imperative, subject <= 72 chars:
 `<type>(<scope>): <summary>`; types: feat, fix, refactor, build, docs, test, chore, exp.

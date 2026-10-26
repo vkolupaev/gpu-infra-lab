@@ -23,9 +23,9 @@ matplotlib.use("Agg")
 import matplotlib.dates as md
 import matplotlib.pyplot as plt
 
+from plotstyle import BLUE, INK, INK2, ORANGE, PHASE, SURF, style_axis
+
 SW_POWER_CAP = 0x4
-INK, INK2, BLUE, ORANGE, GRID, SURF, PHASE = (
-    "#0b0b0b", "#52514e", "#2a78d6", "#eb6834", "#e6e5e0", "#fcfcfb", "#f0efec")
 
 
 def num(field):
@@ -88,7 +88,7 @@ def draw(mon, phases, refs, t0, t1, out, title):
     shown = [(c, max(a, t0), min(b, t1)) for c, a, b in phases if a < t1 and b > t0]
     fig, axes = plt.subplots(3, 1, figsize=(11, 7.2), sharex=True, facecolor=SURF)
     for ax, (Y, label, ref, ref_label) in zip(axes, specs):
-        ax.set_facecolor(SURF)
+        style_axis(ax, label)
         for _, a, b in shown:
             ax.axvspan(a, b, color=PHASE, zorder=0)
         ax.plot([T[i] for i in sel], [Y[i] for i in sel], color=BLUE, lw=2, zorder=2)
@@ -99,14 +99,6 @@ def draw(mon, phases, refs, t0, t1, out, title):
             ax.axhline(ref, color=INK2, lw=1, ls=(0, (4, 3)), zorder=1)
             ax.text(1.0, ref, " " + ref_label, transform=ax.get_yaxis_transform(),
                     va="center", ha="left", fontsize=9, color=INK2)
-        ax.set_ylabel(label, color=INK2, fontsize=10)
-        ax.grid(axis="y", color=GRID, lw=0.8)
-        ax.set_axisbelow(True)
-        for s in ("top", "right"):
-            ax.spines[s].set_visible(False)
-        for s in ("left", "bottom"):
-            ax.spines[s].set_color(GRID)
-        ax.tick_params(colors=INK2, labelsize=9)
     for c, a, b in shown:
         axes[0].text(a + (b - a) / 2, 1.02, f"C={c}", transform=axes[0].get_xaxis_transform(),
                      ha="center", va="bottom", fontsize=10, color=INK, fontweight="bold")

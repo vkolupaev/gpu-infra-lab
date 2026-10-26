@@ -61,7 +61,7 @@ Conventional Commits, imperative, subject <= 72 chars:
 - `Dockerfile` - targets `lab` (vLLM + nsys) and `lab-ncu` (+ Nsight Compute)
 - `bench.py` - `vllm serve` + `vllm bench serve` wrapper, schema v1, experiment drafts
 - `configs/` - engine configs (YAML)
-- `scripts/` - provider-check, hwcheck, start, bootstrap, table (sweep points side by side)
+- `scripts/` - provider-check, hwcheck, start, bootstrap, table (sweep points side by side), plot_sweep, plotstyle (shared plot style)
 - `results/` - `runs.jsonl`, `raw/`, `provider-check/`, `<experiment>/points.jsonl` (one sweep point per line, see README)
 - `experiments/` - experiment notes
 - `notes/` - comparisons and decisions
