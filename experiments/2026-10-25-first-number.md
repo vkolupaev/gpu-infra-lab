@@ -205,6 +205,7 @@ points above 400 W are instantaneous readings, the driver regulates the average.
 - TTFT at C=8/C=32 far above the hypothesis: closed loop + request-rate inf + fixed lengths
   (ignore_eos) keep requests synchronized, every wave starts with a prefill burst - a property of
   the method, not of steady-state serving. Open loop (Block 2.1) will differ.
+  Docs note proposed upstream: [vllm-project/vllm#63802](https://github.com/vllm-project/vllm/pull/63802).
 - Prefill more efficient than assumed (65%): ~62% of measured GEMM at C=1, ~88% in 8192-token
   chunks, using ~13.9 GFLOP/token (embedding is a lookup; lm_head only for the last prefill token;
   `tie_word_embeddings: false` in config.json at the pinned revision, so lm_head is a separate

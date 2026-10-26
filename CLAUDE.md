@@ -74,5 +74,6 @@ copy its private context (employer, career notes) into this repo.
 Block 0 closed on 2026-10-25 (M1-M5 done: repo, Vast as benchmark provider, schema v1,
 TEMPLATE, first number in `experiments/2026-10-25-first-number.md`).
 Lab image `v0.32.0-cu129-daffd21` is in GHCR (torchcodec removed); digests in `notes/images.md`.
+Upstream: vllm-project/vllm#63802 (docs) links commit c62265a as evidence; never rewrite it.
 Next: Block 1. Deferred per plan: host repeat -> 2.1; `lab-ncu`, ncu/MIG provider -> 1.3/4.4.
 Order of blocks: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
