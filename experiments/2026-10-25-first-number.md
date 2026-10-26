@@ -163,8 +163,9 @@ p50@TTFT = 485 ms instead of ~86. At C=32 a wave is 32 x 1024 = 32,768 prefill t
 predicted C=32 TTFT almost exactly. The hypothesis assumed requests desynchronize after the first
 wave and the prefill burst happens once; with identical work the synchronization persists and the
 burst repeats in **every** wave. Caveat: this is a property of the method (closed loop +
-`request-rate inf` + fixed lengths), not of the server, and the worst case for TTFT. In real
-traffic requests arrive at random, a newcomer joins the batch alone and TTFT is closer to ~90 ms.
+`request-rate inf` + fixed lengths), not of the server. With staggered arrivals new requests
+join a running batch one or a few at a time, so at moderate load TTFT is expected to be much
+closer to C=1 (~86 ms); an open loop near saturation can be worse because of queueing.
 To check: open loop (`--request-rate R`, Block 2.1) or length spread (`--random-range-ratio`).
 
 **What power and bit 0x4 show at C=32.** On the GPU sensors the phases alternate in a strict rhythm:

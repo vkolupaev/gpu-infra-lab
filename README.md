@@ -19,7 +19,7 @@ tokens, closed loop at fixed concurrency; on-demand $1.114/h. Measured 2026-10-2
 - C=8 -> C=32 gives 2.37x output, not 4x: batching shares only the weight reads; prefill and
   KV-cache reads belong to each request and grow linearly with concurrency.
 - Closed loop with `--request-rate inf` and fixed lengths keeps requests synchronized in waves,
-  so TTFT here is a worst case, not steady state.
+  so TTFT here includes the prefill of the whole wave; it is not TTFT under staggered arrivals.
 
 [Full experiment note](experiments/2026-10-25-first-number.md)
 
