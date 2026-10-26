@@ -90,8 +90,8 @@ Check against first-number (p50@ITL as T_step, 0.485 s per 8192-token chunk):
 
 | Coefficient | Assumed (hypothesis 2026-10-25) | Measured | Run group | Note |
 |---|---|---|---|---|
-| Decode HBM efficiency, C = 1 | ~85% | 83% (16.4 GB) / ~78% (15.2 GB + KV) | 20261025T101616Z | p50@TPOT 11.21 ms vs 9.32 / 8.74 ms floor |
-| Decode HBM efficiency, C = 8 / 32 | - | 84% / 78% (16.4 GB + KV) | 20261025T101616Z | p50@ITL 12.05 / 15.9 ms vs 10.1 / 12.4 ms |
+| Decode HBM efficiency, C = 1 (floor / p50@TPOT) | ~85% | 83% (16.4 GB) / ~78% (15.2 GB + KV) | 20261025T101616Z | p50@TPOT 11.21 ms vs 9.32 / 8.74 ms floor |
+| Decode HBM efficiency, C = 8 / 32 (floor / p50@ITL) | - | 84% / 78% (16.4 GB + KV) | 20261025T101616Z | p50@ITL 12.05 / 15.9 ms vs 10.1 / 12.4 ms |
 | Prefill efficiency vs measured GEMM | 65% | 62% at 1024 tokens, 88% at 8192-token chunks | 20261025T101616Z | 13.9 GFLOP/token |
 | 8192-token prefill chunk | - | 0.485 s | 20261025T101616Z | p50@TTFT at C = 8 |
 | KV per token | 144 KiB | 144 KiB (exact) | 20261025T101616Z | 54.76 GiB / 398,720 tokens |
@@ -105,7 +105,8 @@ Add a row per new card, model, precision or engine setting. One host so far: tre
 
 - [ ] `bench.py validate` OK, `git.dirty: false`, image with digest, `hwcheck_verdict: OK`.
 - [ ] total / output throughput = (in + out) / out.
-- [ ] TPOT at C = 1 vs memory floor (spec and measured bandwidth): ~60-85% is normal.
+- [ ] C = 1: floor / p50@TPOT = share of bandwidth achieved (spec and measured): ~60-85% is normal.
+      Say "TPOT is 1.39x the floor, 72% of bandwidth achieved", never "TPOT is 72% of the floor".
 - [ ] `GPU KV cache size` in `server.log` vs the formula in section 2.
 - [ ] p50@ITL vs decode-step floor at every C.
 - [ ] TTFT vs prefill estimate; std@E2EL tiny -> synchronized waves (closed-loop artifact).
@@ -117,6 +118,8 @@ Add a row per new card, model, precision or engine setting. One host so far: tre
 
 - GiB vs GB: 144 KiB is 147.5 kB, a ~2% error if mixed.
 - Spec vs measured bandwidth / TFLOPS: always say which one a percentage is relative to.
+- Direction of a percentage: floor / measured time = share of the resource achieved. A measured time
+  is never "72% of the floor" (that would be faster than physics allows); it is 1.39x the floor.
 - Dense vs sparse TFLOPS: A100 BF16 is 312 dense, 624 "with sparsity".
 - Bytes per parameter by precision; quantized formats add scales.
 - Counting embedding and lm_head in prefill FLOPs gives speeds above the card's peak.

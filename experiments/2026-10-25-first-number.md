@@ -84,8 +84,9 @@ $/1M = price_per_hour x gpu_fraction / (throughput x 3600) x 1e6, at 100% utiliz
 Decode floor (weights / peak HBM bandwidth): **8.04 ms/token**. Measured TPOT p50 at concurrency 1: **11.2 ms** -> 72% of peak bandwidth (expect ~60-85%; >100% = measurement error, <40% = investigate).
 
 ## Observations
-- C=1: p50@TPOT = 11.2 ms = 72% of the spec floor 8.04 ms (16.4 GB / 2039 GB/s), 83% of the
-  floor at measured HBM bandwidth (16.4 GB / 1759 GB/s = 9.3 ms). Prefill is ~3% of the request:
+- C=1: p50@TPOT = 11.2 ms, 1.39x the spec floor 8.04 ms (16.4 GB / 2039 GB/s) - 72% of spec
+  HBM bandwidth achieved; 1.20x the floor at measured bandwidth (16.4 GB / 1759 GB/s = 9.3 ms) -
+  83% of measured bandwidth achieved. Prefill is ~3% of the request:
   p50@TTFT = 86 ms of p50@E2EL = 2946 ms.
 - Output throughput: 87 / 568 / 1346 tok/s at C=1/8/32; C=8 -> C=32 grows 2.37x for 4x concurrency.
 - total/output throughput = 5.0 at every C (434/87, 2839/568, 6731/1346).
@@ -120,9 +121,10 @@ C=32: decode plateaus (memory ~82%, 1410 MHz) alternate with 10 prefill dips und
 **What limits speed at C=1.** Prefill is ~3% of the request time (p50@TTFT = 86 ms of
 p50@E2EL = 2946 ms), decode 97%. Decode is memory-bound: every step reads all 16.4 GB of weights
 for one token, ~1 FLOP per byte, far below the ridge point of this card (265.9 TFLOPS /
-1759 GB/s = ~151 FLOP/byte). p50@TPOT = 11.21 ms is 83% of the memory floor (16.4 GB / 1759 GB/s
-= 9.32 ms), while the compute floor is only 16.4 GFLOP / 265.9 TFLOPS = 0.06 ms. Confirmation: at
-C=8 the step barely grew (p50@TPOT 11.2 -> 12.3 ms) with 8x more tokens per step.
+1759 GB/s = ~151 FLOP/byte). p50@TPOT = 11.21 ms is 1.20x the memory floor (16.4 GB / 1759 GB/s
+= 9.32 ms), i.e. 83% of measured HBM bandwidth achieved, while the compute floor is only
+16.4 GFLOP / 265.9 TFLOPS = 0.06 ms. Confirmation: at C=8 the step barely grew (p50@TPOT
+11.2 -> 12.3 ms) with 8x more tokens per step.
 
 **Why C=8 -> C=32 gives 2.37x, not 4x.** In a closed loop a wave of C requests lasts E2E and
 yields C x 256 output tokens, so throughput = C x 256 / p50@E2EL: 87, 568 (6.5x C=1) and 1346 tok/s

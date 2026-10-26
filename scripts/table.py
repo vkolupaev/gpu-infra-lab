@@ -113,7 +113,7 @@ def sort_key(rec, x):
 
 
 def physics_lines(recs):
-    """p50@TPOT at C=1 as % of the spec floor and the measured-bandwidth floor."""
+    """p50@TPOT at C=1 as a multiple of the spec and measured-bandwidth floors, with % of bandwidth achieved."""
     out = []
     for r in recs:
         if get(r, BENCH_X) != 1:
@@ -130,11 +130,12 @@ def physics_lines(recs):
         params = get(r, "model.params_b")
         parts = [f"C=1: p50@TPOT = {tpot:.2f} ms"]
         if spec:
-            parts.append(f"{spec / tpot:.0%} of spec floor ({spec:.2f} ms)")
+            parts.append(f"{tpot / spec:.2f}x spec floor {spec:.2f} ms "
+                         f"({spec / tpot:.0%} of spec bandwidth)")
         if gbps and params:
             floor = params * 2 / gbps * 1000
-            parts.append(f"{floor / tpot:.0%} of measured-bandwidth floor "
-                         f"({floor:.2f} ms = {params} B x 2 bytes / {gbps} GB/s)")
+            parts.append(f"{tpot / floor:.2f}x measured-bandwidth floor {floor:.2f} ms "
+                         f"({floor / tpot:.0%} of measured bandwidth)")
         prefix = f"{r['group_id']}: " if len({x.get('group_id') for x in recs}) > 1 else ""
         out.append(prefix + "; ".join(parts))
     return out
