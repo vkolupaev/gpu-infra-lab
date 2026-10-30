@@ -19,6 +19,7 @@ import os
 import re
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.dates as md
 import matplotlib.pyplot as plt
@@ -42,7 +43,10 @@ def read_monitor(path):
             vals = num(r[4]), num(r[2]), num(r[6]), int(r[8].strip(), 16)
         except (IndexError, ValueError):
             continue  # truncated last line or [N/A] fields
-        T.append(t); P.append(vals[0]); M.append(vals[1]); S.append(vals[2])
+        T.append(t)
+        P.append(vals[0])
+        M.append(vals[1])
+        S.append(vals[2])
         CAP.append(bool(vals[3] & SW_POWER_CAP))
     return T, P, M, S, CAP
 
@@ -87,7 +91,7 @@ def draw(mon, phases, refs, t0, t1, out, title):
              (S, "SM clock, MHz", sm_max, f"max {sm_max:.0f} MHz")]
     shown = [(c, max(a, t0), min(b, t1)) for c, a, b in phases if a < t1 and b > t0]
     fig, axes = plt.subplots(3, 1, figsize=(11, 7.2), sharex=True, facecolor=SURF)
-    for ax, (Y, label, ref, ref_label) in zip(axes, specs):
+    for ax, (Y, label, ref, ref_label) in zip(axes, specs, strict=True):
         style_axis(ax, label)
         for _, a, b in shown:
             ax.axvspan(a, b, color=PHASE, zorder=0)

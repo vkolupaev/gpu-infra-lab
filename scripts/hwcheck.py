@@ -34,13 +34,13 @@ def main():
     n = 2 * 1024**3
     a = torch.empty(n, dtype=torch.uint8, device="cuda")
     b = torch.empty_like(a)
-    hbm = 2 * n / timed(lambda: b.copy_(a), 20) / 1e9
+    hbm = 2 * n / timed(lambda: b.copy_(a), 20) / 1e9  # noqa: F821 - timed() calls the lambda before `del a, b`
     del a, b
     # BF16 GEMM
     m = 8192
     x = torch.randn(m, m, dtype=torch.bfloat16, device="cuda")
     y = torch.randn(m, m, dtype=torch.bfloat16, device="cuda")
-    tflops = 2 * m**3 / timed(lambda: x @ y, 20) / 1e12
+    tflops = 2 * m**3 / timed(lambda: x @ y, 20) / 1e12  # noqa: F821 - timed() calls the lambda before `del x, y`
     del x, y
     # host -> device, pinned memory (PCIe link health)
     h = torch.empty(1024**3, dtype=torch.uint8).pin_memory()

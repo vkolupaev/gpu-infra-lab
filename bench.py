@@ -144,8 +144,8 @@ def hardware_info(override_ff: str | None) -> dict:
         "sm_clock_max_mhz": num(r["clocks.max.sm"]), "mem_clock_max_mhz": num(r["clocks.max.memory"]),
         "pcie_gen_max": num(r["pcie.link.gen.max"]), "pcie_width_max": num(r["pcie.link.width.max"]),
         "driver_version": r["driver_version"], "mig_mode": r["mig.mode.current"],
-        "cpu_model": next((l.split(":", 1)[1].strip() for l in open("/proc/cpuinfo")
-                           if l.startswith("model name")), None),
+        "cpu_model": next((line.split(":", 1)[1].strip() for line in open("/proc/cpuinfo")
+                           if line.startswith("model name")), None),
         "vcpus": os.cpu_count(),
     }
 

@@ -18,6 +18,7 @@ import re
 import sys
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mt
@@ -102,7 +103,7 @@ def main():
                              sharex=True, squeeze=False, facecolor=SURF)
     axes = axes[:, 0]
     xs_all = set()
-    for ax, metrics in zip(axes, panels):
+    for ax, metrics in zip(axes, panels, strict=True):
         style_axis(ax, axis_label([m[1] for m in metrics], metrics[0][2]))
         for gi, g in enumerate(groups):
             for mi, (path, name, _) in enumerate(metrics):
