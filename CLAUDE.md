@@ -61,7 +61,8 @@ copy its private context (employer, career notes) into this repo.
 - Conventional Commits, imperative, subject <= 72 chars:
   `<type>(<scope>): <summary>`; types: feat, fix, refactor, build, docs, test, chore, exp.
 - `exp` bodies carry the key number with its conditions and end with
-  `Run-Group: <group_id>`.
+  `Run-Group: <group_id>`; `exp` commits of points experiments end with
+  `Run-Dir: results/<date>-<slug>`.
 - Stage explicit paths in `exp` commits (`git add results/runs.jsonl results/raw/<group_id>
   experiments/<note>.md`), never `git add -A` or `git add .`: raw directories with no records
   in `runs.jsonl` stay untracked unless an experiment note or `notes/` refers to them.
@@ -71,6 +72,7 @@ copy its private context (employer, career notes) into this repo.
 - `bench.py` - `vllm serve` + `vllm bench serve` wrapper, schema v1, experiment drafts
 - `configs/` - engine configs (YAML)
 - `scripts/` - provider-check, hwcheck, start, bootstrap, table (sweep points side by side), plot_sweep, plotstyle (shared plot style)
+- `pytorch/` - Block 1 lesson scripts (PyTorch, HF transformers): one script per experiment, points to `results/<date>-<slug>/points.jsonl`
 - `results/` - `runs.jsonl`, `raw/`, `provider-check/`, `<experiment>/points.jsonl` (one sweep point per line, see README)
 - `experiments/` - experiment notes
 - `notes/` - comparisons and decisions

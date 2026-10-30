@@ -42,6 +42,7 @@ tokens, closed loop at fixed concurrency; on-demand $1.114/h. Measured 2026-10-2
 - `bench.py` - runs `vllm serve` + `vllm bench serve`, writes one record per run (schema v1)
 - `configs/` - one YAML per engine configuration
 - `scripts/` - provider checks, hardware sanity checks, bootstrap
+- `pytorch/` - Block 1 lesson scripts (PyTorch, HF transformers): one script per experiment, points to `results/<date>-<slug>/points.jsonl`
 - `results/runs.jsonl` - all runs, one JSON record per line; `results/raw/` - untouched tool outputs
 - `experiments/` - experiment notes (question -> hypothesis -> result -> interpretation)
 - `notes/` - comparisons and decisions
