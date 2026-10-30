@@ -1,10 +1,14 @@
 results/raw/**/*.nsys-rep
 results/raw/**/*.ncu-rep
 results/raw/**/*.sqlite
+results/**/*.nsys-rep
+results/**/*.sqlite
+results/**/*.trace.json
+results/**/output_code.txt
 __pycache__/
 .venv/
 *.env
 push.log
 *.log
 # Raw tool outputs (e.g. server.log) must stay tracked
-!results/raw/**/*.log
+!results/**/*.log
