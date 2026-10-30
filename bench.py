@@ -443,6 +443,8 @@ def build_record(cfg, args, res, *, c, n, group_id, git, hw, sw, raw_dir, ready_
             "ignore_eos": wl.get("ignore_eos", True),
             "seed": wl.get("seed", 0),
             "warmup_prompts": wl.get("warmup_prompts", 0),
+            # optional: added only when set, so records of older runs recompute unchanged
+            **({"random_range_ratio": wl["random_range_ratio"]} if "random_range_ratio" in wl else {}),
         },
         "results": {
             "completed": completed,
@@ -504,6 +506,8 @@ def bench_cmd(cfg, model_path, port, c, n, wl, out_dir=None, name=None) -> list[
         "--metric-percentiles",
         "50,95,99",
     ]
+    if "random_range_ratio" in wl:
+        cmd += ["--random-range-ratio", str(wl["random_range_ratio"])]
     if wl.get("ignore_eos", True):
         cmd.append("--ignore-eos")
     if out_dir:

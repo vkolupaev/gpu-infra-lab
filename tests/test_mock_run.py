@@ -73,3 +73,10 @@ def test_failed_server_surfaces_its_own_error(repo):
     assert "libnvrtc.so.13" in out
     assert "ProcessLookupError" not in out
     assert "copy them off the host" in out
+
+
+def test_random_range_ratio_reaches_the_record(repo):
+    p = run_bench(repo, "--config", "configs/qwen3-8b-bf16-rr05.yaml")
+    assert p.returncode == 0, p.stdout + p.stderr
+    recs = [json.loads(line) for line in (repo / "results" / "runs.jsonl").read_text().splitlines()]
+    assert [r["workload"]["random_range_ratio"] for r in recs] == [0.5]
