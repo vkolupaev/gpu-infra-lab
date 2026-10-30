@@ -1,0 +1,9 @@
+# gitleaks 8.16 (Debian 13): default rules plus the token types this lab can leak.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "huggingface-access-token"
+description = "Hugging Face access token (not in the 8.16 default rules)"
+regex = '''\bhf_[A-Za-z0-9]{34}\b'''
+keywords = ["hf_"]
