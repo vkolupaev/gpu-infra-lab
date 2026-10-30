@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # run_session.sh - Block 1 GPU session: lesson scripts in a fixed order, logs next to the points.
 # On the GPU host, inside tmux, from the repo root, image ref exported as LAB_IMAGE:
-#   DATE=2026-11-07 PRICE=1.114 R06=<Qwen/Qwen3-0.6B sha> bash pytorch/run_session.sh a b
-# Part a: hwcheck, 1.4 (Qwen3-8B, Qwen3-0.6B, nsys), 1.1, debt N.  Part b: 1.2, 1.3, 1.5.
+#   DATE=2026-11-07 PRICE=1.114 R06=<Qwen/Qwen3-0.6B sha> BENCH_ARGS='--instance-type <id> ...' \
+#     bash pytorch/run_session.sh a b n
+# Part a: hwcheck, 1.4 (Qwen3-8B, Qwen3-0.6B, nsys), 1.1.  Part b: 1.2, 1.3, 1.5.  Part n: debt N (bench.py).
+# n goes last: bench.py appends to results/runs.jsonl, a tracked file, so every point written after it
+# would record git.dirty = true.
 # A failed step is logged and the session goes on; check results/<DATE>-session/session.log.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -53,6 +56,8 @@ for part in "$@"; do
       --out "$O/points" --precision bf16 --steps 10 --nsys-range
     step train-step-nsys nsys stats -f csv -o "$O/train" \
       -r nvtx_gpu_proj_sum,cuda_gpu_kern_sum,cuda_gpu_mem_time_sum "$O/train.nsys-rep"
+    ;;
+  n)
     log "start debt N: bench.py, C=8, random_range_ratio 0.5"
     python3 bench.py run --config configs/qwen3-8b-bf16-rr05.yaml --provider vast \
       --price-per-hour "${PRICE:?set PRICE}" --tag waves-rr05 ${BENCH_ARGS:-} 2>&1 | tee -a "$S/bench-rr05.log"
@@ -75,7 +80,7 @@ for part in "$@"; do
     fi
     step compile timeout 1500 python3 pytorch/compile_speedup.py --out "$O" --append --hf --revision "$R8"
     ;;
-  *) log "unknown part $part (use a, b)" ;;
+  *) log "unknown part $part (use a, b, n)" ;;
   esac
 done
 log "done. On the laptop: copy results/ and experiments/ back, then DESTROY the instance."
