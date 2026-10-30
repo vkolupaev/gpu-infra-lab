@@ -39,8 +39,10 @@ for part in "$@"; do
     python3 -c "from huggingface_hub import snapshot_download as s; s('Qwen/Qwen3-8B', revision='$R8'); s('Qwen/Qwen3-0.6B', revision='$R06')" \
       > "$S/hf-download.log" 2>&1 &
     DL=$!
-    step h2d-copy python3 pytorch/h2d_copy.py --out "results/$D-h2d-copy"
+    # h2d-copy waits for the download: snapshot_download loads the host CPU and memory, and pageable
+    # copies go through a CPU memcpy
     wait $DL || log "FAILED model download, see $S/hf-download.log"
+    step h2d-copy python3 pytorch/h2d_copy.py --out "results/$D-h2d-copy"
     step prefill-decode python3 pytorch/prefill_decode.py --model Qwen/Qwen3-8B --revision "$R8" \
       --out "results/$D-prefill-decode" --busy
     step prefill-decode python3 pytorch/prefill_decode.py --model Qwen/Qwen3-0.6B --revision "$R06" \
