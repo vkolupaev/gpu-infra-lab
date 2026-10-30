@@ -19,7 +19,8 @@ import time
 import torch
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-GEMM = re.compile(r"gemm|xmma|cutlass|s16816|s1688|cublas|tem_fused_mm", re.I)
+# gemv, splitKreduce: cuBLAS kernels for batch-1 matmuls (decode); their names need not contain "gemm" or "cublas"
+GEMM = re.compile(r"gemm|gemv|splitkreduce|xmma|cutlass|s16816|s1688|cublas|tem_fused_mm", re.I)
 ATTN = re.compile(r"flash|fmha|attention", re.I)
 
 
