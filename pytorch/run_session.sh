@@ -56,7 +56,8 @@ for part in "$@"; do
     log "start debt N: bench.py, C=8, random_range_ratio 0.5"
     python3 bench.py run --config configs/qwen3-8b-bf16-rr05.yaml --provider vast \
       --price-per-hour "${PRICE:?set PRICE}" --tag waves-rr05 ${BENCH_ARGS:-} 2>&1 | tee -a "$S/bench-rr05.log"
-    log "debt N rc=${PIPESTATUS[0]}"
+    rc=${PIPESTATUS[0]}
+    if [ "$rc" = 0 ]; then log "ok debt N"; else log "FAILED rc=$rc debt N, see $S/bench-rr05.log"; fi
     ;;
   b)
     step backward-cost python3 pytorch/backward_cost.py --out "results/$D-backward-cost"
@@ -66,7 +67,12 @@ for part in "$@"; do
     mkdir -p "$O"
     log "start $O (part A, TORCH_LOGS=output_code -> output_code.txt)"
     TORCH_LOGS=output_code python3 pytorch/compile_speedup.py --out "$O" 2> "$O/output_code.txt" | tee -a "$O/stdout.log"
-    log "compile part A rc=${PIPESTATUS[0]}"
+    rc=${PIPESTATUS[0]}
+    if [ "$rc" = 0 ]; then log "ok $O (part A)"; else
+      # stderr went to output_code.txt (not committed): keep the traceback in stdout.log
+      tail -n 40 "$O/output_code.txt" >> "$O/stdout.log"
+      log "FAILED rc=$rc $O (part A), traceback at the end of $O/stdout.log"
+    fi
     step compile timeout 1500 python3 pytorch/compile_speedup.py --out "$O" --append --hf --revision "$R8"
     ;;
   *) log "unknown part $part (use a, b)" ;;
