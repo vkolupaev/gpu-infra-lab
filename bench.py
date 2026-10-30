@@ -129,7 +129,7 @@ def hardware_info(override_ff: str | None) -> dict:
     if not rows:
         return {"gpu_name": "unknown", "gpu_count": 0, "form_factor": override_ff or "unknown",
                 "memory_total_mib": None}
-    r = dict(zip(fields, rows[0]))
+    r = dict(zip(fields, rows[0], strict=True))
 
     def num(v):
         try:
