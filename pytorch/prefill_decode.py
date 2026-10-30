@@ -34,20 +34,27 @@ except ImportError:  # moved or removed: generate() only calls put() and end()
 class Clock(BaseStreamer):
     """Streamer that only stamps time: generate() calls put() with the prompt, then per token."""
 
-    def __init__(self, nvtx=False):
+    def __init__(self, nvtx=False, n_new=None):
         super().__init__()
-        self.t, self.nvtx = [], nvtx
+        self.t, self.nvtx, self.n_new, self.open = [], nvtx, n_new, False
 
     def put(self, value):
         self.t.append(time.perf_counter())
-        if self.nvtx and len(self.t) >= 2:
-            if len(self.t) > 2:
-                torch.cuda.nvtx.range_pop()
-            torch.cuda.nvtx.range_push(f"decode_step_{len(self.t) - 1}")
+        if not self.nvtx:
+            return
+        if self.open:
+            torch.cuda.nvtx.range_pop()
+            self.open = False
+        n = len(self.t) - 1  # tokens so far; t[0] is the prompt
+        # a range per decode step: none after the last token, there is no step left to cover
+        if n >= 1 and (self.n_new is None or n < self.n_new):
+            torch.cuda.nvtx.range_push(f"decode_step_{n}")
+            self.open = True
 
     def end(self):
-        if self.nvtx and len(self.t) > 2:
+        if self.open:
             torch.cuda.nvtx.range_pop()
+            self.open = False
 
 
 def load(a, dev):
@@ -120,7 +127,7 @@ def generate_timed(model, prompt_len, n_new, dev, cache="dynamic", nvtx=False, s
     """One generate(); returns (ttft_ms, [itl_ms, ...])."""
     g = torch.Generator().manual_seed(seed)
     ids = torch.randint(0, model.config.vocab_size, (1, prompt_len), generator=g).to(dev)
-    clock = Clock(nvtx=nvtx)
+    clock = Clock(nvtx=nvtx, n_new=n_new)
     gc = make_gen_config(model, n_new, cache)
     sync(dev)
     t0 = time.perf_counter()
