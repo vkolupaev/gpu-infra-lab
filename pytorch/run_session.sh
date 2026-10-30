@@ -8,7 +8,7 @@
 # would record git.dirty = true.
 # A failed step is logged and the session goes on; check results/<DATE>-session/session.log.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 D=${DATE:?set DATE=YYYY-MM-DD}
 R8=$(python3 -c "import yaml; print(yaml.safe_load(open('configs/qwen3-8b-bf16.yaml'))['revision'])")
 S=results/$D-session
@@ -23,6 +23,7 @@ step() { # step <slug> <command...>
   local rc=${PIPESTATUS[0]}
   if [ "$rc" = 0 ]; then log "ok $out"; else log "FAILED rc=$rc $out"; fi
 }
+# shellcheck disable=SC2054  # "cuda,nvtx" is one nsys argument, not two array elements
 NSYS=(nsys profile -t cuda,nvtx --sample=none --cpuctxsw=none --cuda-graph-trace=node
   --capture-range=cudaProfilerApi --capture-range-end=stop -f true)
 
@@ -61,6 +62,7 @@ for part in "$@"; do
     ;;
   n)
     log "start debt N: bench.py, C=8, random_range_ratio 0.5"
+    # shellcheck disable=SC2086  # BENCH_ARGS is several flags in one env var: word splitting is intended
     python3 bench.py run --config configs/qwen3-8b-bf16-rr05.yaml --provider vast \
       --price-per-hour "${PRICE:?set PRICE}" --tag waves-rr05 ${BENCH_ARGS:-} 2>&1 | tee -a "$S/bench-rr05.log"
     rc=${PIPESTATUS[0]}
