@@ -34,6 +34,8 @@ tokens, closed loop at fixed concurrency; on-demand $1.114/h. Measured 2026-10-2
 - One variable changes per experiment; each engine configuration is its own file in `configs/`.
 - p99 from fewer than 200 requests is flagged as approximate (`p99_reliable: false`).
 - Model revision is pinned by commit sha, the base image by digest.
+- Derived fields of every committed run are recomputed from raw outputs by the test suite on
+  every commit. After cloning, enable the hook: `git config core.hooksPath .githooks`.
 
 ## Layout
 - `Dockerfile` - lab image: pinned official vLLM image + profiling tools

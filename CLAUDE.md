@@ -51,6 +51,12 @@ copy its private context (employer, career notes) into this repo.
 - Experiment notes: `experiments/YYYY-MM-DD-<slug>.md` from `experiments/TEMPLATE.md`;
   Question and Hypothesis are written before results are looked at.
 
+## Checks
+- The pre-commit hook (`.githooks/`) runs ruff, gitleaks and tests; never bypass it (no `--no-verify`).
+- A linter false positive gets a line-level `# noqa: <code>` with the reason, never a global ignore.
+- Changing a formula behind `derived` fails `tests/test_recompute.py`: bump `schema_version` (see Results schema).
+- New script logic that produces numbers gets a test on committed raw data.
+
 ## Commits
 - Conventional Commits, imperative, subject <= 72 chars:
   `<type>(<scope>): <summary>`; types: feat, fix, refactor, build, docs, test, chore, exp.
@@ -68,7 +74,10 @@ copy its private context (employer, career notes) into this repo.
 - `results/` - `runs.jsonl`, `raw/`, `provider-check/`, `<experiment>/points.jsonl` (one sweep point per line, see README)
 - `experiments/` - experiment notes
 - `notes/` - comparisons and decisions
-- `tests/mock/` - fake `vllm`, `nvidia-smi`, `huggingface_hub` for offline runs
+- `pyproject.toml` - ruff config only (not a package)
+- `tests/` - pytest suite; `golden/` - expected outputs, `mock/` - fake `vllm`, `nvidia-smi`,
+  `huggingface_hub` for offline runs
+- `.githooks/` - pre-commit hook (`git config core.hooksPath .githooks`); `.gitleaks.toml` - secret rules
 
 ## Status
 Block 0 closed on 2026-10-25 (M1-M5 done: repo, Vast as benchmark provider, schema v1,
