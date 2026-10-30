@@ -8,8 +8,8 @@ Swept variable: prompt length P. For every P: TTFT, ITL p50/p90 over all decode 
 --busy adds GPU time per decode step from a profiler trace (kernel time of a 33-token
 generate minus a 1-token generate, divided by 32) and the number of kernels per step:
 busy / ITL = the share of a decode step the GPU actually works.
-At P=1024 the trace of that 33-token generate (trace-busy-<model>-P1024.trace.json, not in git)
-and its top kernels (kernels-busy-<model>-P1024.txt) are kept next to the points.
+At P=1024 both traces (trace-busy-<model>-P1024-n1.trace.json and -n33.trace.json, not in git)
+and the top kernels of the 33-token one (kernels-busy-<model>-P1024.txt) are kept next to the points.
 --nsys-decode: one P=1024 run, cudaProfilerStart/Stop around the decode steps and an
 NVTX range per step; run it under `nsys profile --capture-range=cudaProfilerApi`.
 
@@ -140,14 +140,15 @@ def generate_timed(model, prompt_len, n_new, dev, cache="dynamic", nvtx=False, s
     return (t[0] - t0) * 1e3, [(b - a) * 1e3 for a, b in itertools.pairwise(t)]
 
 
-def busy_per_step(model, prompt_len, dev, steps=32, trace=None):
+def busy_per_step(model, prompt_len, dev, steps=32, keep=None):
     """GPU time and kernel count per decode step: trace(1 + steps tokens) - trace(1 token).
 
-    With `trace` the trace of the (1 + steps)-token generate is kept at that path.
-    Returns the per-step sums and that generate's kernels.
+    With `keep` (a path stem) both traces are kept as <keep>-n1.trace.json and <keep>-n<1 + steps>.trace.json.
+    Returns the per-step sums and the kernels of the (1 + steps)-token generate.
     """
-    one = kernel_summary(trace_kernels(lambda: generate_timed(model, prompt_len, 1, dev), dev))
-    ks = trace_kernels(lambda: generate_timed(model, prompt_len, 1 + steps, dev), dev, path=trace)
+    path = (lambda n: f"{keep}-n{n}.trace.json") if keep else (lambda n: None)
+    one = kernel_summary(trace_kernels(lambda: generate_timed(model, prompt_len, 1, dev), dev, path=path(1)))
+    ks = trace_kernels(lambda: generate_timed(model, prompt_len, 1 + steps, dev), dev, path=path(1 + steps))
     many = kernel_summary(ks)
     return {k: (many[k] - one[k]) / steps for k in many}, ks
 
@@ -209,7 +210,7 @@ def main() -> None:
             # one P keeps its trace and kernel names, so GEMM / attention / other can be recomputed later
             keep = P == (256 if a.tiny else 1024)
             stem = f"busy-{short}-P{P}"
-            b, ks = busy_per_step(model, P, dev, trace=pts.dir / f"trace-{stem}.trace.json" if keep else None)
+            b, ks = busy_per_step(model, P, dev, keep=pts.dir / f"trace-{stem}" if keep else None)
             if keep:
                 pts.write_text(f"kernels-{stem}.txt", top_kernels(ks))
             point.update(
