@@ -4,6 +4,7 @@
 Measures device memory bandwidth, BF16 GEMM throughput and host->device bandwidth,
 and compares them with spec-sheet peaks. Prints one JSON object.
 """
+
 import json
 import subprocess
 import time
@@ -11,10 +12,17 @@ import time
 import torch
 
 SPEC = {  # name substring -> (HBM GB/s, dense BF16 TFLOPS)
-    "A100-SXM4-80GB": (2039, 312), "A100 80GB PCIe": (1935, 312),
-    "A100-SXM4-40GB": (1555, 312), "A100-PCIE-40GB": (1555, 312),
-    "H100 80GB HBM3": (3350, 989), "H100 PCIe": (2000, 756), "H100 NVL": (3900, 835),
-    "H200 NVL": (4800, 835), "H200": (4800, 989), "A30": (933, 165), "L40S": (864, 362),
+    "A100-SXM4-80GB": (2039, 312),
+    "A100 80GB PCIe": (1935, 312),
+    "A100-SXM4-40GB": (1555, 312),
+    "A100-PCIE-40GB": (1555, 312),
+    "H100 80GB HBM3": (3350, 989),
+    "H100 PCIe": (2000, 756),
+    "H100 NVL": (3900, 835),
+    "H200 NVL": (4800, 835),
+    "H200": (4800, 989),
+    "A30": (933, 165),
+    "L40S": (864, 362),
 }
 
 
@@ -47,21 +55,31 @@ def main():
     d = torch.empty(1024**3, dtype=torch.uint8, device="cuda")
     h2d = 1024**3 / timed(lambda: d.copy_(h, non_blocking=True), 10) / 1e9
     link = subprocess.run(
-        ["nvidia-smi", "--query-gpu=pcie.link.gen.current,pcie.link.width.current,"
-         "clocks.sm,power.draw,power.limit,temperature.gpu,clocks_throttle_reasons.active",
-         "--format=csv,noheader"], capture_output=True, text=True).stdout.strip()
+        [
+            "nvidia-smi",
+            "--query-gpu=pcie.link.gen.current,pcie.link.width.current,"
+            "clocks.sm,power.draw,power.limit,temperature.gpu,clocks_throttle_reasons.active",
+            "--format=csv,noheader",
+        ],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     spec = next((v for k, v in SPEC.items() if k in name), None)
     out = {
         "gpu_name": name,
-        "hbm_copy_gbps": round(hbm), "bf16_gemm_tflops": round(tflops, 1),
+        "hbm_copy_gbps": round(hbm),
+        "bf16_gemm_tflops": round(tflops, 1),
         "h2d_pinned_gbps": round(h2d, 1),
         "nvidia_smi_after_load": link,
     }
     if spec:
         out["hbm_pct_of_spec"] = round(100 * hbm / spec[0])
         out["gemm_pct_of_spec"] = round(100 * tflops / spec[1])
-        out["verdict"] = ("OK" if out["hbm_pct_of_spec"] >= 75 and out["gemm_pct_of_spec"] >= 55
-                          else "SUSPICIOUS: check power limit, clocks, throttle reasons")
+        out["verdict"] = (
+            "OK"
+            if out["hbm_pct_of_spec"] >= 75 and out["gemm_pct_of_spec"] >= 55
+            else "SUSPICIOUS: check power limit, clocks, throttle reasons"
+        )
     out["h2d_note"] = "PCIe Gen4 x16 ~20-25 GB/s, Gen5 x16 ~40-50, Gen3 x16 or Gen4 x8 ~11-13"
     print(json.dumps(out, indent=2))
 

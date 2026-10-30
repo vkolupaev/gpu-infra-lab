@@ -19,6 +19,7 @@ Usage:
   python3 bench.py validate results/runs.jsonl
   python3 bench.py tocsv results/runs.jsonl > results/runs.csv
 """
+
 from __future__ import annotations
 
 import argparse
@@ -44,32 +45,69 @@ EXPERIMENTS = ROOT / "experiments"
 # Peak memory bandwidth (GB/s) for the decode roofline sanity check.
 # Spec-sheet values; extend when a new card shows up.
 GPU_MEM_BW_GBPS = {
-    "A100-SXM4-80GB": 2039, "A100 80GB PCIe": 1935,
-    "A100-SXM4-40GB": 1555, "A100-PCIE-40GB": 1555,
-    "H100 80GB HBM3": 3350, "H100 PCIe": 2000, "H100 NVL": 3900,
-    "H200": 4800, "H200 NVL": 4800,
-    "A30": 933, "Tesla T4": 320, "L40S": 864,
+    "A100-SXM4-80GB": 2039,
+    "A100 80GB PCIe": 1935,
+    "A100-SXM4-40GB": 1555,
+    "A100-PCIE-40GB": 1555,
+    "H100 80GB HBM3": 3350,
+    "H100 PCIe": 2000,
+    "H100 NVL": 3900,
+    "H200": 4800,
+    "H200 NVL": 4800,
+    "A30": 933,
+    "Tesla T4": 320,
+    "L40S": 864,
 }
 BYTES_PER_PARAM = {"bfloat16": 2, "float16": 2, "half": 2, "fp8": 1, "int8": 1, "awq": 0.5, "gptq": 0.5}
 
 REQUIRED = {  # dotted paths that must be present (value may be null only where noted)
-    "schema_version", "run_id", "group_id", "timestamp_utc", "git.commit",
-    "provider.name", "provider.price_per_hour_usd", "provider.gpu_sharing", "provider.gpu_fraction",
-    "hardware.gpu_name", "hardware.form_factor", "hardware.memory_total_mib",
-    "software.vllm_version", "software.image",
-    "model.id", "model.revision", "model.precision",
-    "engine.max_num_seqs", "engine.max_num_batched_tokens", "engine.max_model_len",
-    "engine.gpu_memory_utilization", "engine.enable_prefix_caching",
-    "workload.input_len", "workload.output_len", "workload.concurrency", "workload.num_prompts",
-    "results.completed", "results.output_throughput_tps", "results.total_throughput_tps",
-    "results.ttft_ms.p50", "results.e2el_ms.p50", "results.e2el_ms.p95", "results.e2el_ms.p99",
-    "derived.usd_per_1m_output_tokens", "derived.usd_per_1m_total_tokens",
+    "schema_version",
+    "run_id",
+    "group_id",
+    "timestamp_utc",
+    "git.commit",
+    "provider.name",
+    "provider.price_per_hour_usd",
+    "provider.gpu_sharing",
+    "provider.gpu_fraction",
+    "hardware.gpu_name",
+    "hardware.form_factor",
+    "hardware.memory_total_mib",
+    "software.vllm_version",
+    "software.image",
+    "model.id",
+    "model.revision",
+    "model.precision",
+    "engine.max_num_seqs",
+    "engine.max_num_batched_tokens",
+    "engine.max_model_len",
+    "engine.gpu_memory_utilization",
+    "engine.enable_prefix_caching",
+    "workload.input_len",
+    "workload.output_len",
+    "workload.concurrency",
+    "workload.num_prompts",
+    "results.completed",
+    "results.output_throughput_tps",
+    "results.total_throughput_tps",
+    "results.ttft_ms.p50",
+    "results.e2el_ms.p50",
+    "results.e2el_ms.p95",
+    "results.e2el_ms.p99",
+    "derived.usd_per_1m_output_tokens",
+    "derived.usd_per_1m_total_tokens",
 }
 NON_NULL = {  # must also be non-empty (None/0 means the vLLM result keys did not match)
-    "results.completed", "results.output_throughput_tps", "results.total_throughput_tps",
-    "results.ttft_ms.p50", "results.ttft_ms.p95", "results.tpot_ms.p50",
-    "results.e2el_ms.p50", "results.e2el_ms.p95",
-    "derived.usd_per_1m_output_tokens", "derived.usd_per_1m_total_tokens",
+    "results.completed",
+    "results.output_throughput_tps",
+    "results.total_throughput_tps",
+    "results.ttft_ms.p50",
+    "results.ttft_ms.p95",
+    "results.tpot_ms.p50",
+    "results.e2el_ms.p50",
+    "results.e2el_ms.p95",
+    "derived.usd_per_1m_output_tokens",
+    "derived.usd_per_1m_total_tokens",
 }
 
 
@@ -121,14 +159,27 @@ def form_factor(name: str) -> str:
 
 
 def hardware_info(override_ff: str | None) -> dict:
-    fields = ["name", "memory.total", "power.limit", "power.max_limit", "clocks.max.sm",
-              "clocks.max.memory", "pcie.link.gen.max", "pcie.link.width.max",
-              "driver_version", "mig.mode.current"]
+    fields = [
+        "name",
+        "memory.total",
+        "power.limit",
+        "power.max_limit",
+        "clocks.max.sm",
+        "clocks.max.memory",
+        "pcie.link.gen.max",
+        "pcie.link.width.max",
+        "driver_version",
+        "mig.mode.current",
+    ]
     out = sh(["nvidia-smi", f"--query-gpu={','.join(fields)}", "--format=csv,noheader,nounits"])
     rows = [[c.strip() for c in line.split(",")] for line in out.splitlines() if line.strip()]
     if not rows:
-        return {"gpu_name": "unknown", "gpu_count": 0, "form_factor": override_ff or "unknown",
-                "memory_total_mib": None}
+        return {
+            "gpu_name": "unknown",
+            "gpu_count": 0,
+            "form_factor": override_ff or "unknown",
+            "memory_total_mib": None,
+        }
     r = dict(zip(fields, rows[0], strict=True))
 
     def num(v):
@@ -136,40 +187,59 @@ def hardware_info(override_ff: str | None) -> dict:
             return float(v)
         except (TypeError, ValueError):
             return None
+
     return {
-        "gpu_name": r["name"], "gpu_count": len(rows),
+        "gpu_name": r["name"],
+        "gpu_count": len(rows),
         "form_factor": override_ff or form_factor(r["name"]),
         "memory_total_mib": num(r["memory.total"]),
-        "power_limit_w": num(r["power.limit"]), "power_max_limit_w": num(r["power.max_limit"]),
-        "sm_clock_max_mhz": num(r["clocks.max.sm"]), "mem_clock_max_mhz": num(r["clocks.max.memory"]),
-        "pcie_gen_max": num(r["pcie.link.gen.max"]), "pcie_width_max": num(r["pcie.link.width.max"]),
-        "driver_version": r["driver_version"], "mig_mode": r["mig.mode.current"],
-        "cpu_model": next((line.split(":", 1)[1].strip() for line in open("/proc/cpuinfo")
-                           if line.startswith("model name")), None),
+        "power_limit_w": num(r["power.limit"]),
+        "power_max_limit_w": num(r["power.max_limit"]),
+        "sm_clock_max_mhz": num(r["clocks.max.sm"]),
+        "mem_clock_max_mhz": num(r["clocks.max.memory"]),
+        "pcie_gen_max": num(r["pcie.link.gen.max"]),
+        "pcie_width_max": num(r["pcie.link.width.max"]),
+        "driver_version": r["driver_version"],
+        "mig_mode": r["mig.mode.current"],
+        "cpu_model": next(
+            (line.split(":", 1)[1].strip() for line in open("/proc/cpuinfo") if line.startswith("model name")), None
+        ),
         "vcpus": os.cpu_count(),
     }
 
 
 def software_info(image: str | None) -> dict:
-    probe = ("import json,torch,vllm;print(json.dumps({'vllm':vllm.__version__,"
-             "'torch':torch.__version__,'cuda':torch.version.cuda}))")
+    probe = (
+        "import json,torch,vllm;print(json.dumps({'vllm':vllm.__version__,"
+        "'torch':torch.__version__,'cuda':torch.version.cuda}))"
+    )
     try:
         v = json.loads(sh([sys.executable, "-c", probe]) or "{}")
     except json.JSONDecodeError:
         v = {}
     image = image or os.environ.get("LAB_IMAGE") or "unknown"
     if "gpu-infra-lab" not in image:
-        print(f"WARNING: lab image is probably not set (LAB_IMAGE={image!r}); "
-              "pass --image or export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag>@sha256:<digest>",
-              file=sys.stderr)
+        print(
+            f"WARNING: lab image is probably not set (LAB_IMAGE={image!r}); "
+            "pass --image or export LAB_IMAGE=ghcr.io/vkolupaev/gpu-infra-lab:<tag>@sha256:<digest>",
+            file=sys.stderr,
+        )
     elif "@sha256:" not in image:
         # the image cannot know its own digest before push: it comes from LAB_IMAGE on the host
-        print(f"WARNING: lab image has no digest (LAB_IMAGE={image!r}); "
-              "export LAB_IMAGE=<tag>@sha256:<digest> from notes/images.md", file=sys.stderr)
+        print(
+            f"WARNING: lab image has no digest (LAB_IMAGE={image!r}); "
+            "export LAB_IMAGE=<tag>@sha256:<digest> from notes/images.md",
+            file=sys.stderr,
+        )
     digest = image.split("@", 1)[1] if "@sha256:" in image else None
-    return {"vllm_version": v.get("vllm", "unknown"), "torch_version": v.get("torch"),
-            "cuda_runtime": v.get("cuda"), "image": image, "image_digest": digest,
-            "base_image": os.environ.get("VLLM_BASE_IMAGE") or "unknown"}
+    return {
+        "vllm_version": v.get("vllm", "unknown"),
+        "torch_version": v.get("torch"),
+        "cuda_runtime": v.get("cuda"),
+        "image": image,
+        "image_digest": digest,
+        "base_image": os.environ.get("VLLM_BASE_IMAGE") or "unknown",
+    }
 
 
 def serve_flags(serve: dict) -> list[str]:
@@ -215,8 +285,10 @@ def stop_group(proc: subprocess.Popen, timeout_s: int = 60) -> None:
             pass
 
 
-MONITOR_FIELDS = ("timestamp,utilization.gpu,utilization.memory,memory.used,power.draw,"
-                  "temperature.gpu,clocks.sm,clocks.mem,clocks_throttle_reasons.active")
+MONITOR_FIELDS = (
+    "timestamp,utilization.gpu,utilization.memory,memory.used,power.draw,"
+    "temperature.gpu,clocks.sm,clocks.mem,clocks_throttle_reasons.active"
+)
 
 
 def run_hwcheck(raw_dir: pathlib.Path, skip: bool, allow_suspicious: bool) -> dict:
@@ -229,21 +301,32 @@ def run_hwcheck(raw_dir: pathlib.Path, skip: bool, allow_suspicious: bool) -> di
         raise SystemExit(f"hwcheck failed with code {p.returncode}:\n{p.stderr[-2000:]}")
     (raw_dir / "hwcheck.json").write_text(p.stdout)
     hc = json.loads(p.stdout)
-    out = {"hbm_copy_gbps": hc.get("hbm_copy_gbps"), "bf16_gemm_tflops": hc.get("bf16_gemm_tflops"),
-           "hwcheck_verdict": hc.get("verdict")}  # no verdict: GPU not in hwcheck SPEC
-    print(f"hwcheck: HBM {out['hbm_copy_gbps']} GB/s, BF16 GEMM {out['bf16_gemm_tflops']} TFLOPS, "
-          f"verdict {out['hwcheck_verdict']}")
+    out = {
+        "hbm_copy_gbps": hc.get("hbm_copy_gbps"),
+        "bf16_gemm_tflops": hc.get("bf16_gemm_tflops"),
+        "hwcheck_verdict": hc.get("verdict"),
+    }  # no verdict: GPU not in hwcheck SPEC
+    print(
+        f"hwcheck: HBM {out['hbm_copy_gbps']} GB/s, BF16 GEMM {out['bf16_gemm_tflops']} TFLOPS, "
+        f"verdict {out['hwcheck_verdict']}"
+    )
     if out["hwcheck_verdict"] != "OK" and not allow_suspicious:
-        raise SystemExit(f"hwcheck verdict is {out['hwcheck_verdict']!r}, see {raw_dir / 'hwcheck.json'}. "
-                         "Rent another host or pass --allow-suspicious.")
+        raise SystemExit(
+            f"hwcheck verdict is {out['hwcheck_verdict']!r}, see {raw_dir / 'hwcheck.json'}. "
+            "Rent another host or pass --allow-suspicious."
+        )
     return out
 
 
 def start_monitor(path: pathlib.Path) -> subprocess.Popen | None:
     try:
         with path.open("w") as f:
-            return subprocess.Popen(["nvidia-smi", f"--query-gpu={MONITOR_FIELDS}", "--format=csv", "-l", "1"],
-                                    stdout=f, stderr=subprocess.STDOUT, start_new_session=True)
+            return subprocess.Popen(
+                ["nvidia-smi", f"--query-gpu={MONITOR_FIELDS}", "--format=csv", "-l", "1"],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
     except OSError as e:
         print(f"WARNING: GPU monitor not started: {e}", file=sys.stderr)
         return None
@@ -253,17 +336,23 @@ def stop_monitor(mon: subprocess.Popen | None) -> None:
     if mon is None:
         return
     if mon.poll() is not None:
-        print(f"WARNING: nvidia-smi monitor exited by itself with code {mon.returncode}; "
-              "gpu-monitor.csv may be incomplete", file=sys.stderr)
+        print(
+            f"WARNING: nvidia-smi monitor exited by itself with code {mon.returncode}; "
+            "gpu-monitor.csv may be incomplete",
+            file=sys.stderr,
+        )
         return
     stop_group(mon, timeout_s=10)
 
 
 def pct(res: dict, metric: str) -> dict:
     g = lambda k: res.get(k)  # noqa: E731
-    return {"mean": g(f"mean_{metric}_ms"),
-            "p50": g(f"p50_{metric}_ms") if g(f"p50_{metric}_ms") is not None else g(f"median_{metric}_ms"),
-            "p95": g(f"p95_{metric}_ms"), "p99": g(f"p99_{metric}_ms")}
+    return {
+        "mean": g(f"mean_{metric}_ms"),
+        "p50": g(f"p50_{metric}_ms") if g(f"p50_{metric}_ms") is not None else g(f"median_{metric}_ms"),
+        "p95": g(f"p95_{metric}_ms"),
+        "p99": g(f"p99_{metric}_ms"),
+    }
 
 
 def flatten(d: dict, prefix: str = "") -> dict:
@@ -311,16 +400,28 @@ def build_record(cfg, args, res, *, c, n, group_id, git, hw, sw, raw_dir, ready_
         "run_id": f"{group_id}_c{c}",
         "group_id": group_id,
         "timestamp_utc": utcnow(),
-        "tag": args.tag, "note": args.note,
+        "tag": args.tag,
+        "note": args.note,
         "git": git,
-        "provider": {"name": args.provider, "instance_type": args.instance_type,
-                     "price_per_hour_usd": args.price_per_hour, "price_basis": args.price_basis,
-                     "gpu_sharing": args.gpu_sharing, "gpu_fraction": args.gpu_fraction},
+        "provider": {
+            "name": args.provider,
+            "instance_type": args.instance_type,
+            "price_per_hour_usd": args.price_per_hour,
+            "price_basis": args.price_basis,
+            "gpu_sharing": args.gpu_sharing,
+            "gpu_fraction": args.gpu_fraction,
+        },
         "hardware": hw,
         "software": sw,
-        "model": {"id": cfg["model"], "short": model_short, "revision": cfg["revision"],
-                  "precision": quant or precision, "dtype": precision, "quantization": quant,
-                  "params_b": params_b},
+        "model": {
+            "id": cfg["model"],
+            "short": model_short,
+            "revision": cfg["revision"],
+            "precision": quant or precision,
+            "dtype": precision,
+            "quantization": quant,
+            "params_b": params_b,
+        },
         "engine": {
             "max_num_seqs": eng.get("max-num-seqs"),
             "max_num_batched_tokens": eng.get("max-num-batched-tokens"),
@@ -332,17 +433,28 @@ def build_record(cfg, args, res, *, c, n, group_id, git, hw, sw, raw_dir, ready_
             "server_ready_s": round(ready_s, 1),
             "serve_args": eng,
         },
-        "workload": {"dataset": "random", "input_len": wl["input_len"], "output_len": wl["output_len"],
-                     "concurrency": c, "num_prompts": n, "request_rate": "inf",
-                     "ignore_eos": wl.get("ignore_eos", True), "seed": wl.get("seed", 0),
-                     "warmup_prompts": wl.get("warmup_prompts", 0)},
+        "workload": {
+            "dataset": "random",
+            "input_len": wl["input_len"],
+            "output_len": wl["output_len"],
+            "concurrency": c,
+            "num_prompts": n,
+            "request_rate": "inf",
+            "ignore_eos": wl.get("ignore_eos", True),
+            "seed": wl.get("seed", 0),
+            "warmup_prompts": wl.get("warmup_prompts", 0),
+        },
         "results": {
-            "completed": completed, "failed": n - completed,
+            "completed": completed,
+            "failed": n - completed,
             "duration_s": res.get("duration"),
             "request_throughput_rps": res.get("request_throughput"),
-            "output_throughput_tps": out_tps, "total_throughput_tps": tot_tps,
-            "ttft_ms": pct(res, "ttft"), "tpot_ms": pct(res, "tpot"),
-            "itl_ms": pct(res, "itl"), "e2el_ms": pct(res, "e2el"),
+            "output_throughput_tps": out_tps,
+            "total_throughput_tps": tot_tps,
+            "ttft_ms": pct(res, "ttft"),
+            "tpot_ms": pct(res, "tpot"),
+            "itl_ms": pct(res, "itl"),
+            "e2el_ms": pct(res, "e2el"),
         },
         "derived": {
             "usd_per_1m_output_tokens": usd_per_1m(out_tps),
@@ -351,21 +463,47 @@ def build_record(cfg, args, res, *, c, n, group_id, git, hw, sw, raw_dir, ready_
             "decode_floor_ms_per_token": floor_ms,  # weights / peak bandwidth, batch=1 lower bound
             "p99_reliable": completed >= 200,
         },
-        "raw": {"dir": str(raw_dir.relative_to(ROOT)), "vllm_result": f"c{c}.json",
-                "server_log": "server.log"},
+        "raw": {"dir": str(raw_dir.relative_to(ROOT)), "vllm_result": f"c{c}.json", "server_log": "server.log"},
         "extra": args.extra or {},
     }
 
 
 def bench_cmd(cfg, model_path, port, c, n, wl, out_dir=None, name=None) -> list[str]:
-    cmd = ["vllm", "bench", "serve", "--backend", "vllm",
-           "--host", "127.0.0.1", "--port", str(port), "--endpoint", "/v1/completions",
-           "--model", cfg["model"], "--tokenizer", model_path,
-           "--dataset-name", "random",
-           "--random-input-len", str(wl["input_len"]), "--random-output-len", str(wl["output_len"]),
-           "--num-prompts", str(n), "--max-concurrency", str(c), "--request-rate", "inf",
-           "--seed", str(wl.get("seed", 0)),
-           "--percentile-metrics", "ttft,tpot,itl,e2el", "--metric-percentiles", "50,95,99"]
+    cmd = [
+        "vllm",
+        "bench",
+        "serve",
+        "--backend",
+        "vllm",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        str(port),
+        "--endpoint",
+        "/v1/completions",
+        "--model",
+        cfg["model"],
+        "--tokenizer",
+        model_path,
+        "--dataset-name",
+        "random",
+        "--random-input-len",
+        str(wl["input_len"]),
+        "--random-output-len",
+        str(wl["output_len"]),
+        "--num-prompts",
+        str(n),
+        "--max-concurrency",
+        str(c),
+        "--request-rate",
+        "inf",
+        "--seed",
+        str(wl.get("seed", 0)),
+        "--percentile-metrics",
+        "ttft,tpot,itl,e2el",
+        "--metric-percentiles",
+        "50,95,99",
+    ]
     if wl.get("ignore_eos", True):
         cmd.append("--ignore-eos")
     if out_dir:
@@ -384,15 +522,21 @@ def cmd_run(args) -> None:
     if git["dirty"]:
         print("WARNING: git tree is dirty - record will carry dirty=true. Commit code before runs.")
     hw, sw = hardware_info(args.form_factor), software_info(args.image)
-    group_id = (f"{dt.datetime.now(dt.timezone.utc):%Y%m%dT%H%M%SZ}_"
-                f"{cfg['model'].split('/')[-1].lower()}_{git['commit'][:7]}")
+    group_id = (
+        f"{dt.datetime.now(dt.timezone.utc):%Y%m%dT%H%M%SZ}_{cfg['model'].split('/')[-1].lower()}_{git['commit'][:7]}"
+    )
     raw_dir = RESULTS / "raw" / group_id
     raw_dir.mkdir(parents=True, exist_ok=True)
+
     # atexit runs after Python prints the error (SystemExit message or traceback) and keeps its exit code
     def remind() -> None:
         sys.stdout.flush()  # a piped stdout is block-buffered and flushed only after atexit
-        print(f"raw outputs kept in results/raw/{group_id}/ - copy them off the host before destroying it",
-              file=sys.stderr, flush=True)
+        print(
+            f"raw outputs kept in results/raw/{group_id}/ - copy them off the host before destroying it",
+            file=sys.stderr,
+            flush=True,
+        )
+
     atexit.register(remind)
     (raw_dir / "config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
     (raw_dir / "nvidia-smi-q.txt").write_text(sh(["nvidia-smi", "-q"]))
@@ -401,6 +545,7 @@ def cmd_run(args) -> None:
 
     # 1. pinned model snapshot
     from huggingface_hub import snapshot_download
+
     t0 = time.time()
     model_path = snapshot_download(cfg["model"], revision=cfg["revision"])
     print(f"model ready in {time.time() - t0:.0f}s: {model_path}")
@@ -408,8 +553,16 @@ def cmd_run(args) -> None:
     # 2. server
     port = args.port
     log = raw_dir / "server.log"
-    serve = ["vllm", "serve", model_path, "--served-model-name", cfg["model"],
-             "--port", str(port), *serve_flags(cfg["serve"])]
+    serve = [
+        "vllm",
+        "serve",
+        model_path,
+        "--served-model-name",
+        cfg["model"],
+        "--port",
+        str(port),
+        *serve_flags(cfg["serve"]),
+    ]
     (raw_dir / "serve_cmd.txt").write_text(" ".join(serve) + "\n")
     mon = start_monitor(raw_dir / "gpu-monitor.csv")
     proc = None
@@ -421,8 +574,9 @@ def cmd_run(args) -> None:
         # 3. warmup (not recorded)
         warm = wl.get("warmup_prompts", 0)
         if warm:
-            subprocess.run(bench_cmd(cfg, model_path, port, max(levels), warm, wl),
-                           check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(
+                bench_cmd(cfg, model_path, port, max(levels), warm, wl), check=True, stdout=subprocess.DEVNULL
+            )
         # 4. sweep
         records = []
         for c in levels:
@@ -431,8 +585,9 @@ def cmd_run(args) -> None:
             print(f"--- concurrency={c} num_prompts={n}")
             subprocess.run(bench_cmd(cfg, model_path, port, c, n, wl, raw_dir, name), check=True)
             res = json.loads((raw_dir / name).read_text())
-            rec = build_record(cfg, args, res, c=c, n=n, group_id=group_id, git=git, hw=hw,
-                               sw=sw, raw_dir=raw_dir, ready_s=ready_s)
+            rec = build_record(
+                cfg, args, res, c=c, n=n, group_id=group_id, git=git, hw=hw, sw=sw, raw_dir=raw_dir, ready_s=ready_s
+            )
             problems = validate(rec)
             if problems:
                 print(f"WARNING: record incomplete: {problems}")
@@ -471,24 +626,38 @@ def draft_note(records: list[dict], cfg: dict, args) -> pathlib.Path:
         f"/ {fmt(r['results']['e2el_ms']['p99'])}{'' if r['derived']['p99_reliable'] else '*'} "
         f"| {fmt(r['derived']['usd_per_1m_output_tokens'], 3)} "
         f"| {fmt(r['derived']['usd_per_1m_total_tokens'], 3)} | {r['results']['completed']} |"
-        for r in records)
+        for r in records
+    )
     raw_dir = ROOT / r0["raw"]["dir"]
-    raw_files = ", ".join(f"`{f}`" for f in ("gpu-monitor.csv", "nvidia-smi-q.txt", "hwcheck.json")
-                          if (raw_dir / f).exists()) or "none"
-    hwcheck = (f"HBM copy {hw.get('hbm_copy_gbps')} GB/s, BF16 GEMM {hw.get('bf16_gemm_tflops')} TFLOPS, "
-               f"verdict {hw.get('hwcheck_verdict')}") if hw.get("hbm_copy_gbps") is not None else "skipped"
+    raw_files = (
+        ", ".join(f"`{f}`" for f in ("gpu-monitor.csv", "nvidia-smi-q.txt", "hwcheck.json") if (raw_dir / f).exists())
+        or "none"
+    )
+    hwcheck = (
+        (
+            f"HBM copy {hw.get('hbm_copy_gbps')} GB/s, BF16 GEMM {hw.get('bf16_gemm_tflops')} TFLOPS, "
+            f"verdict {hw.get('hwcheck_verdict')}"
+        )
+        if hw.get("hbm_copy_gbps") is not None
+        else "skipped"
+    )
     floor = r0["derived"]["decode_floor_ms_per_token"]
     tpot_c1 = next((r["results"]["tpot_ms"]["p50"] for r in records if r["workload"]["concurrency"] == 1), None)
-    sanity = (f"Decode floor (weights / peak HBM bandwidth): **{floor} ms/token**. "
-              f"Measured TPOT p50 at concurrency 1: **{fmt(tpot_c1, 1)} ms** "
-              f"-> {fmt(floor / tpot_c1 * 100 if floor and tpot_c1 else None)}% of peak bandwidth "
-              "(expect ~60-85%; >100% = measurement error, <40% = investigate).") if floor else \
-        "Decode floor: unknown GPU in GPU_MEM_BW_GBPS or model_params_b missing."
-    path.write_text(f"""# {slug}: {r0['model']['short']} on {hw['gpu_name']}
+    sanity = (
+        (
+            f"Decode floor (weights / peak HBM bandwidth): **{floor} ms/token**. "
+            f"Measured TPOT p50 at concurrency 1: **{fmt(tpot_c1, 1)} ms** "
+            f"-> {fmt(floor / tpot_c1 * 100 if floor and tpot_c1 else None)}% of peak bandwidth "
+            "(expect ~60-85%; >100% = measurement error, <40% = investigate)."
+        )
+        if floor
+        else "Decode floor: unknown GPU in GPU_MEM_BW_GBPS or model_params_b missing."
+    )
+    path.write_text(f"""# {slug}: {r0["model"]["short"]} on {hw["gpu_name"]}
 
 - Date: {dt.date.today():%Y-%m-%d}
-- Run group: `{r0['group_id']}`
-- Commit: `{r0['git']['commit'][:12]}` (dirty: {r0['git']['dirty']})
+- Run group: `{r0["group_id"]}`
+- Commit: `{r0["git"]["commit"][:12]}` (dirty: {r0["git"]["dirty"]})
 - Status: draft
 
 ## Question
@@ -500,13 +669,13 @@ TODO: expected outcome and why, written BEFORE looking at the results.
 ## Setup (auto)
 | | |
 |---|---|
-| Provider | {r0['provider']['name']} {r0['provider']['instance_type'] or ''}, ${r0['provider']['price_per_hour_usd']}/h ({r0['provider']['price_basis']}), sharing: {r0['provider']['gpu_sharing']} |
-| GPU | {hw['gpu_count']}x {hw['gpu_name']} ({hw['form_factor']}), {fmt(hw.get('memory_total_mib'))} MiB, power limit {fmt(hw.get('power_limit_w'))} W, driver {hw.get('driver_version')} |
-| Software | vLLM {r0['software']['vllm_version']}, torch {r0['software']['torch_version']}, CUDA {r0['software']['cuda_runtime']}, image `{r0['software']['image']}` (base `{r0['software'].get('base_image', 'unknown')}`) |
-| Model | `{r0['model']['id']}` @ `{r0['model']['revision'][:12]}`, precision {r0['model']['precision']} |
-| Engine | max_num_seqs={e['max_num_seqs']}, max_num_batched_tokens={e['max_num_batched_tokens']}, max_model_len={e['max_model_len']}, gpu_mem_util={e['gpu_memory_utilization']}, prefix_caching={e['enable_prefix_caching']} |
-| Workload | random, {w['input_len']} in / {w['output_len']} out tokens, ignore_eos={w['ignore_eos']}, closed loop (max-concurrency), seed={w['seed']} |
-| Monitoring | raw files {raw_files} (nvidia-smi 1 sample/s); hwcheck: {hwcheck}; plots: `python3 scripts/plot_gpu_monitor.py {r0['raw']['dir']}` |
+| Provider | {r0["provider"]["name"]} {r0["provider"]["instance_type"] or ""}, ${r0["provider"]["price_per_hour_usd"]}/h ({r0["provider"]["price_basis"]}), sharing: {r0["provider"]["gpu_sharing"]} |
+| GPU | {hw["gpu_count"]}x {hw["gpu_name"]} ({hw["form_factor"]}), {fmt(hw.get("memory_total_mib"))} MiB, power limit {fmt(hw.get("power_limit_w"))} W, driver {hw.get("driver_version")} |
+| Software | vLLM {r0["software"]["vllm_version"]}, torch {r0["software"]["torch_version"]}, CUDA {r0["software"]["cuda_runtime"]}, image `{r0["software"]["image"]}` (base `{r0["software"].get("base_image", "unknown")}`) |
+| Model | `{r0["model"]["id"]}` @ `{r0["model"]["revision"][:12]}`, precision {r0["model"]["precision"]} |
+| Engine | max_num_seqs={e["max_num_seqs"]}, max_num_batched_tokens={e["max_num_batched_tokens"]}, max_model_len={e["max_model_len"]}, gpu_mem_util={e["gpu_memory_utilization"]}, prefix_caching={e["enable_prefix_caching"]} |
+| Workload | random, {w["input_len"]} in / {w["output_len"]} out tokens, ignore_eos={w["ignore_eos"]}, closed loop (max-concurrency), seed={w["seed"]} |
+| Monitoring | raw files {raw_files} (nvidia-smi 1 sample/s); hwcheck: {hwcheck}; plots: `python3 scripts/plot_gpu_monitor.py {r0["raw"]["dir"]}` |
 
 ## Results (auto)
 | Concurrency | Out tok/s | Total tok/s | TTFT p50/p95 ms | TPOT p50 ms | E2E p50/p95/p99 ms | $/1M out | $/1M total | n |
@@ -570,7 +739,9 @@ def main() -> None:
     r.add_argument("--gpu-sharing", default="none", help="none | mig:3g.40gb | mps:50 | timeslice:2")
     r.add_argument("--gpu-fraction", type=float, default=1.0, help="share of the price attributed to this run")
     r.add_argument("--form-factor", default=None, help="override autodetect: SXM | PCIe | NVL")
-    r.add_argument("--image", default=None, help="lab image ref, e.g. ghcr.io/vkolupaev/gpu-infra-lab:<tag> (default: $LAB_IMAGE)")
+    r.add_argument(
+        "--image", default=None, help="lab image ref, e.g. ghcr.io/vkolupaev/gpu-infra-lab:<tag> (default: $LAB_IMAGE)"
+    )
     r.add_argument("--concurrency", default=None, help="e.g. 1,8,32 (default: from config)")
     r.add_argument("--num-prompts", type=int, default=None, help="fixed count for every level")
     r.add_argument("--port", type=int, default=8000)
@@ -579,7 +750,7 @@ def main() -> None:
     r.add_argument("--note", default=None)
     r.add_argument("--skip-hwcheck", action="store_true", help="no scripts/hwcheck.py (mock runs only)")
     r.add_argument("--allow-suspicious", action="store_true", help="continue when the hwcheck verdict is not OK")
-    r.add_argument("--extra", type=json.loads, default=None, help='free-form JSON, e.g. \'{"host_id": 123}\'')
+    r.add_argument("--extra", type=json.loads, default=None, help="free-form JSON, e.g. '{\"host_id\": 123}'")
     r.set_defaults(func=cmd_run)
     v = sub.add_parser("validate")
     v.add_argument("file")

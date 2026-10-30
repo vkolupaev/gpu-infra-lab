@@ -10,6 +10,7 @@ clocks_event_reasons are marked.
 
     python3 scripts/plot_gpu_monitor.py results/raw/<group_id>
 """
+
 import argparse
 import csv
 import datetime as dt
@@ -86,9 +87,11 @@ def draw(mon, phases, refs, t0, t1, out, title):
     T, P, M, S, CAP = mon
     sel = [i for i, t in enumerate(T) if t0 <= t <= t1]
     limit, sm_max = refs
-    specs = [(P, "Power draw, W", limit, f"power limit {limit:.0f} W"),
-             (M, "Memory utilization, %", None, None),
-             (S, "SM clock, MHz", sm_max, f"max {sm_max:.0f} MHz")]
+    specs = [
+        (P, "Power draw, W", limit, f"power limit {limit:.0f} W"),
+        (M, "Memory utilization, %", None, None),
+        (S, "SM clock, MHz", sm_max, f"max {sm_max:.0f} MHz"),
+    ]
     shown = [(c, max(a, t0), min(b, t1)) for c, a, b in phases if a < t1 and b > t0]
     fig, axes = plt.subplots(3, 1, figsize=(11, 7.2), sharex=True, facecolor=SURF)
     for ax, (Y, label, ref, ref_label) in zip(axes, specs, strict=True):
@@ -97,20 +100,43 @@ def draw(mon, phases, refs, t0, t1, out, title):
             ax.axvspan(a, b, color=PHASE, zorder=0)
         ax.plot([T[i] for i in sel], [Y[i] for i in sel], color=BLUE, lw=2, zorder=2)
         capped = [i for i in sel if CAP[i]]
-        ax.scatter([T[i] for i in capped], [Y[i] for i in capped],
-                   s=46, color=ORANGE, edgecolor=SURF, linewidth=2, zorder=3)
+        ax.scatter(
+            [T[i] for i in capped], [Y[i] for i in capped], s=46, color=ORANGE, edgecolor=SURF, linewidth=2, zorder=3
+        )
         if ref:
             ax.axhline(ref, color=INK2, lw=1, ls=(0, (4, 3)), zorder=1)
-            ax.text(1.0, ref, " " + ref_label, transform=ax.get_yaxis_transform(),
-                    va="center", ha="left", fontsize=9, color=INK2)
+            ax.text(
+                1.0,
+                ref,
+                " " + ref_label,
+                transform=ax.get_yaxis_transform(),
+                va="center",
+                ha="left",
+                fontsize=9,
+                color=INK2,
+            )
     for c, a, b in shown:
-        axes[0].text(a + (b - a) / 2, 1.02, f"C={c}", transform=axes[0].get_xaxis_transform(),
-                     ha="center", va="bottom", fontsize=10, color=INK, fontweight="bold")
+        axes[0].text(
+            a + (b - a) / 2,
+            1.02,
+            f"C={c}",
+            transform=axes[0].get_xaxis_transform(),
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            color=INK,
+            fontweight="bold",
+        )
     axes[-1].xaxis.set_major_formatter(md.DateFormatter("%H:%M:%S"))
     axes[-1].set_xlabel("Time, UTC (1 sample per second)", color=INK2, fontsize=10)
     fig.suptitle(title, x=0.06, ha="left", fontsize=13, color=INK, y=0.995)
-    fig.text(0.06, 0.945, "Orange dots: clocks_event_reasons has bit 0x4 (SW power cap). "
-             "Shaded: benchmark phases.", fontsize=9.5, color=INK2)
+    fig.text(
+        0.06,
+        0.945,
+        "Orange dots: clocks_event_reasons has bit 0x4 (SW power cap). Shaded: benchmark phases.",
+        fontsize=9.5,
+        color=INK2,
+    )
     fig.tight_layout(rect=(0, 0, 0.93, 0.94))
     fig.savefig(out, dpi=130, facecolor=SURF)
     plt.close(fig)
@@ -133,12 +159,24 @@ def main():
     prefix = f"{phases[0][2]:%Y-%m-%d}-{run_tag(a.run_dir, a.runs)}"
     os.makedirs(a.out_dir, exist_ok=True)
     pad = dt.timedelta(seconds=30)
-    draw(mon, phases, (limit, sm_max), phases[0][1] - pad, phases[-1][2] + pad / 6,
-         os.path.join(a.out_dir, a.overview or f"{prefix}-gpu-overview.png"),
-         f"{gpu} during the run: whole benchmark")
-    draw(mon, phases, (limit, sm_max), z0 - pad / 7, z1 + pad / 10,
-         os.path.join(a.out_dir, a.zoom or f"{prefix}-gpu-c{c_max}.png"),
-         f"Zoom on C={c_max}: decode plateaus vs prefill bursts")
+    draw(
+        mon,
+        phases,
+        (limit, sm_max),
+        phases[0][1] - pad,
+        phases[-1][2] + pad / 6,
+        os.path.join(a.out_dir, a.overview or f"{prefix}-gpu-overview.png"),
+        f"{gpu} during the run: whole benchmark",
+    )
+    draw(
+        mon,
+        phases,
+        (limit, sm_max),
+        z0 - pad / 7,
+        z1 + pad / 10,
+        os.path.join(a.out_dir, a.zoom or f"{prefix}-gpu-c{c_max}.png"),
+        f"Zoom on C={c_max}: decode plateaus vs prefill bursts",
+    )
 
 
 if __name__ == "__main__":

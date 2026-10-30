@@ -13,6 +13,7 @@ check of p50@TPOT at C=1 against the spec and measured-bandwidth decode floors.
     python3 scripts/table.py results/runs.jsonl --group <group_id>
     python3 scripts/table.py results/<experiment>/points.jsonl --col batch --col 'mem_peak_mib=peak mem, MiB'
 """
+
 import argparse
 import csv
 import json
@@ -21,8 +22,7 @@ import re
 import sys
 
 BENCH_X = "workload.concurrency"
-MULTI_GROUP = [("group_id", "group"), ("extra.machine_id", "machine"),
-               ("hardware.power_limit_w", "power limit, W")]
+MULTI_GROUP = [("group_id", "group"), ("extra.machine_id", "machine"), ("hardware.power_limit_w", "power limit, W")]
 
 
 def load(path, groups=None):
@@ -62,8 +62,7 @@ def get(rec, path):
 
 
 def ratio(a, b):
-    return lambda r: (get(r, a) / get(r, b) * 100
-                      if get(r, a) is not None and get(r, b) else None)
+    return lambda r: get(r, a) / get(r, b) * 100 if get(r, a) is not None and get(r, b) else None
 
 
 # (label, path or function, format)
@@ -130,13 +129,14 @@ def physics_lines(recs):
         params = get(r, "model.params_b")
         parts = [f"C=1: p50@TPOT = {tpot:.2f} ms"]
         if spec:
-            parts.append(f"{tpot / spec:.2f}x spec floor {spec:.2f} ms "
-                         f"({spec / tpot:.0%} of spec bandwidth)")
+            parts.append(f"{tpot / spec:.2f}x spec floor {spec:.2f} ms ({spec / tpot:.0%} of spec bandwidth)")
         if gbps and params:
             floor = params * 2 / gbps * 1000
-            parts.append(f"{tpot / floor:.2f}x measured-bandwidth floor {floor:.2f} ms "
-                         f"({floor / tpot:.0%} of measured bandwidth)")
-        prefix = f"{r['group_id']}: " if len({x.get('group_id') for x in recs}) > 1 else ""
+            parts.append(
+                f"{tpot / floor:.2f}x measured-bandwidth floor {floor:.2f} ms "
+                f"({floor / tpot:.0%} of measured bandwidth)"
+            )
+        prefix = f"{r['group_id']}: " if len({x.get("group_id") for x in recs}) > 1 else ""
         out.append(prefix + "; ".join(parts))
     return out
 
@@ -145,16 +145,29 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("jsonl", help="results/runs.jsonl or results/<experiment>/points.jsonl")
     p.add_argument("--group", action="append", help="group_id to keep (repeatable)")
-    p.add_argument("--col", dest="cols", action="extend", type=lambda s: [s], metavar="PATH[=LABEL]",
-                   help="one column: a dotted path or raw:<key>, optionally =label "
-                        "(repeatable; e.g. --col 'results.ttft_ms.p50=p50@TTFT, ms')")
-    p.add_argument("--cols", dest="cols", action="extend", type=split_cols, metavar="LIST",
-                   help="shorthand for several --col: items split on a comma NOT followed by "
-                        "whitespace, so 'results.ttft_ms.p50=p50@TTFT, ms,raw:std_e2el_ms' is two "
-                        "columns; a label with a comma and no space after it needs --col. "
-                        "--col and --cols mix, columns keep command-line order")
-    p.add_argument("--sort", help=f"dotted path to sort by within a group "
-                                  f"(default {BENCH_X} for bench, else the first column)")
+    p.add_argument(
+        "--col",
+        dest="cols",
+        action="extend",
+        type=lambda s: [s],
+        metavar="PATH[=LABEL]",
+        help="one column: a dotted path or raw:<key>, optionally =label "
+        "(repeatable; e.g. --col 'results.ttft_ms.p50=p50@TTFT, ms')",
+    )
+    p.add_argument(
+        "--cols",
+        dest="cols",
+        action="extend",
+        type=split_cols,
+        metavar="LIST",
+        help="shorthand for several --col: items split on a comma NOT followed by "
+        "whitespace, so 'results.ttft_ms.p50=p50@TTFT, ms,raw:std_e2el_ms' is two "
+        "columns; a label with a comma and no space after it needs --col. "
+        "--col and --cols mix, columns keep command-line order",
+    )
+    p.add_argument(
+        "--sort", help=f"dotted path to sort by within a group (default {BENCH_X} for bench, else the first column)"
+    )
     p.add_argument("--format", choices=("md", "csv"), default="md")
     a = p.parse_args()
 
