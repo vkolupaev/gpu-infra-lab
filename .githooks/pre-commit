@@ -6,3 +6,10 @@ ruff check --quiet .
 ruff format --check --quiet .
 gitleaks protect --staged --redact --no-banner --log-level warn --config .gitleaks.toml
 pytest -q -p no:cacheprovider tests
+# The FLOP formula test needs torch, which the system python lacks: when pytorch/ or the test is staged,
+# run it with the lab venv (LAB_PYTHON); without a venv it stays skipped above.
+if git diff --cached --name-only | grep -qE '^(pytorch/|tests/test_pytorch_formulas\.py$)'; then
+  py=${LAB_PYTHON:-$HOME/.venvs/lab/bin/python}
+  if [ -x "$py" ]; then "$py" -m pytest -q -p no:cacheprovider tests/test_pytorch_formulas.py
+  else echo "pre-commit: $py not found, tests/test_pytorch_formulas.py skipped"; fi
+fi
