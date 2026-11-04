@@ -15,6 +15,11 @@ copy its private context (employer, career notes) into this repo.
 - Talk to the user in Russian.
 - Everything committed (code, comments, README, notes, experiment records,
   commit messages) is in English.
+- This applies to every Claude session that writes into this repo (Claude Code or a
+  chat session), whatever language the conversation uses. Read this file before
+  creating or editing files here.
+- Quotes of the user's Russian notes go into the repo translated into English only:
+  no Russian original and no "translated from Russian" mark.
 
 ## Hard rules
 1. No employer data here: no numbers from work GPUs/VMs, no project or company
