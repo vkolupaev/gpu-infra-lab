@@ -55,6 +55,10 @@ copy its private context (employer, career notes) into this repo.
   (memory bandwidth, FLOPs, memory capacity) in the experiment note.
 - Experiment notes: `experiments/YYYY-MM-DD-<slug>.md` from `experiments/TEMPLATE.md`;
   Question and Hypothesis are written before results are looked at.
+- Pre-registered hypotheses: `experiments/YYYY-MM-DD-<slug>.hypothesis.md`, where the date is the
+  day the hypothesis is committed (a fact, not a forecast). Never rename or edit one after its
+  commit; a moved run only changes `DATE=` of the session, and the experiment note and
+  `results/<date>-<slug>` carry the actual run date.
 
 ## Checks
 - The pre-commit hook (`.githooks/`) runs ruff, gitleaks and tests; never bypass it (no `--no-verify`).
