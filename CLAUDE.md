@@ -81,7 +81,8 @@ copy its private context (employer, career notes) into this repo.
 - `bench.py` - `vllm serve` + `vllm bench serve` wrapper, schema v1, experiment drafts
 - `configs/` - engine configs (YAML)
 - `scripts/` - provider-check, hwcheck, start, bootstrap, table (sweep points side by side), plot_sweep, plotstyle (shared plot style)
-- `pytorch/` - Block 1 lesson scripts (PyTorch, HF transformers): one script per experiment, points to `results/<date>-<slug>/points.jsonl`
+- `pytorch/` - Block 1 lesson scripts (PyTorch, HF transformers): one script per experiment, points to `results/<date>-<slug>/points.jsonl`;
+  `run_session.sh` runs a GPU session by parts, `preflight.sh` checks the environment before it
 - `results/` - `runs.jsonl`, `raw/`, `provider-check/`, `<experiment>/points.jsonl` (one sweep point per line, see README)
 - `experiments/` - experiment notes
 - `notes/` - comparisons and decisions
@@ -95,5 +96,11 @@ Block 0 closed on 2026-10-25 (M1-M5 done: repo, Vast as benchmark provider, sche
 TEMPLATE, first number in `experiments/2026-10-25-first-number.md`).
 Lab image `v0.32.0-cu129-daffd21` is in GHCR (torchcodec removed); digests in `notes/images.md`.
 Upstream: vllm-project/vllm#63802 (docs) links commit c62265a as evidence; never rewrite it.
-Next: Block 1. Deferred per plan: host repeat -> 2.1; `lab-ncu`, ncu/MIG provider -> 1.3/4.4.
+Block 1 in progress. Pre-registered hypotheses for prefill-decode and waves-rr05 committed
+on 2026-11-23 (74e520b). GPU session 1 ran on 2026-11-24 on Vast (machine 142924, parts `a n`
+of `pytorch/run_session.sh`, preceded by `pytorch/preflight.sh`); results are committed as
+separate `exp(...)` commits.
+Next: experiment records for 1.4 and 1.1, then 1.2, 1.3, 1.5 and GPU session 2 (part `b`,
+planned ~2026-12-05).
+Deferred per plan: host repeat -> 2.1; `lab-ncu`, ncu/MIG provider -> 1.3/4.4.
 Order of blocks: 0 -> 1 -> 2 -> 5 -> 4 -> 3.

@@ -55,3 +55,10 @@ matches the listed $0.014/h for 100 GB (100 x 0.10 / 730 h = $0.0137/h).
 - RunPod: expose TCP 22 at deploy and use direct SSH, not the ssh.runpod.io proxy.
 - Pass PRICE as a bare number (`PRICE=1.114`): the shell expands "$1" in "$1.114".
 - Check the hwcheck verdict before any measurement; SUSPICIOUS -> new host.
+
+## Host notes after 2026-10-22
+- 2026-11-24, Vast machine 142924: A100-SXM4-80GB, PCIe Gen4 x16, 400 W power limit,
+  32 vCPU allocated (offer listing: cpu_cores_effective). Same server as first-number
+  (machine 142924) but a different GPU (Bus Id 81:00.0 vs C1:00.0 on 2026-10-25), same
+  driver 595.91.07; the 2026-10-22 provider check (machine not recorded) had 580.159.03.
+  Compare hosts in Block 2.1.

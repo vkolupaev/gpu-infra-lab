@@ -96,4 +96,5 @@ Conventional Commits, English, imperative, subject <= 72 chars:
 - Never amend or force-push a commit that a record points to.
 - No employer data in this repository.
 
-Status: Block 0 closed on 2026-10-25; next is Block 1. Block order: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
+Status: Block 0 closed on 2026-10-25. Block 1 in progress: GPU session 1 ran on 2026-11-24;
+next are its experiment records and GPU session 2. Block order: 0 -> 1 -> 2 -> 5 -> 4 -> 3.
