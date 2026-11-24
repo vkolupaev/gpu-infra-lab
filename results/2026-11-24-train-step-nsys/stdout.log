@@ -1,0 +1,19 @@
+WARNING: Device-side CUDA Event completion trace is currently enabled.
+         This may increase runtime overhead and the likelihood of false
+         dependencies across CUDA Streams. If you wish to avoid this, please
+         disable the feature with --cuda-event-trace=false.
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-report-f2bf.qdstrm'
+[1/1] [0%                          ] train.nsys-repProcessing events...
+[1/1] [0%                          ] train.nsys-rep[1/1] [8%                          ] train.nsys-rep[1/1] [=16%                        ] train.nsys-rep[1/1] [==================78%       ] train.nsys-rep[1/1] [===================79%      ] train.nsys-rep[1/1] [========================100%] train.nsys-rep[1/1] [========================100%] train.nsys-rep
+{"group_id": "mlp-b4096", "precision": "bf16", "peak_tflops": 312.0, "batch": 4096, "matmul_params": 37789696, "pinned": true, "h2d_ms": 1.527, "forward_ms": 1.666, "backward_ms": 3.152, "optimizer_ms": 1.918, "step_ms": 8.263, "wall_step_ms": 8.652, "forward_ms_no_sync": 0.294, "backward_over_forward": 1.892, "forward_tflops": 185.83, "backward_tflops": 185.55, "loss_first": 2.3025, "loss_last": 1.3558}
+Generated:
+	/root/lab/results/2026-11-24-train-step-nsys/train.nsys-rep
+Generating SQLite file results/2026-11-24-train-step-nsys/train.sqlite from results/2026-11-24-train-step-nsys/train.nsys-rep
+Processing [results/2026-11-24-train-step-nsys/train.sqlite] with [/opt/nvidia/nsight-systems/2025.1.3/host-linux-x64/reports/nvtx_gpu_proj_sum.py] to [results/2026-11-24-train-step-nsys/train_nvtx_gpu_proj_sum.csv]... PROCESSED
+
+Processing [results/2026-11-24-train-step-nsys/train.sqlite] with [/opt/nvidia/nsight-systems/2025.1.3/host-linux-x64/reports/cuda_gpu_kern_sum.py] to [results/2026-11-24-train-step-nsys/train_cuda_gpu_kern_sum.csv]... PROCESSED
+
+Processing [results/2026-11-24-train-step-nsys/train.sqlite] with [/opt/nvidia/nsight-systems/2025.1.3/host-linux-x64/reports/cuda_gpu_mem_time_sum.py] to [results/2026-11-24-train-step-nsys/train_cuda_gpu_mem_time_sum.csv]... PROCESSED
+
