@@ -1,0 +1,26 @@
+  total us  share  count  class      name
+  145485.3  24.2%   2304  gemm       ampere_bf16_s16816gemm_bf16_128x64_ldg8_f2f_stages_32x6_tn
+  134372.7  22.4%   3456  gemm       ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x6_tn
+   59016.1   9.8%    180  gemm       ampere_bf16_s16816gemm_bf16_256x128_ldg8_f2f_stages_64x3_tn
+   26848.1   4.5%   7201  other      void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::
+   23303.0   3.9%   4884  other      void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const:
+   22925.7   3.8%   2304  gemm       std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true
+   22443.8   3.7%     33  gemm       ampere_bf16_s16816gemm_bf16_64x64_sliced1x2_ldg8_f2f_stages_64x5_tn
+   20426.8   3.4%   4785  other      void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, 4, 
+   16587.5   2.8%   4818  other      void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::bi
+   13365.9   2.2%   2448  other      void at::native::(anonymous namespace)::CatArrayBatchedCopy<at::native::(anonymous namespace)::OpaqueType<2u>, unsigned int, 4, 64, 64>(at::
+   11219.1   1.9%   2304  other      void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<2u>, unsigned int, 3, 1
+   11032.0   1.8%   4785  other      void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<float, float>(at::TensorI
+   11010.7   1.8%   4680  other      void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul> >(int, at::native::CUDA
+   10566.3   1.8%   4851  other      void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::ar
+    9875.4   1.6%   3524  other      void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_
+    9832.8   1.6%   1152  gemm       void pytorch_flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits
+    8713.1   1.5%   4785  other      void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::
+    8031.0   1.3%   4785  other      void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char*, 2ul> >(int, at::native::CUDAFu
+    8014.5   1.3%   2376  other      void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::neg_kernel_cuda(at::TensorIteratorBase&)::{lambda
+    7728.6   1.3%   1152  gemm       void pytorch_flash::flash_fwd_splitkv_combine_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kerne
+    4548.9   0.8%   1188  other      void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::silu_kernel(at::TensorIteratorBase&)::{lambda()#1}::ope
+    3954.4   0.7%     72  gemm       ampere_bf16_s16816gemm_bf16_128x128_ldg8_f2f_stages_64x3_tn
+    3377.5   0.6%     36  gemm       void pytorch_flash::flash_fwd_kernel<Flash_fwd_kernel_traits<128, 128, 64, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 12
+    2525.0   0.4%   2373  other      Memset (Device)
+    1088.9   0.2%     72  other      void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<c10::BFloat16> >(at::TensorIterat
