@@ -1,0 +1,15 @@
+== preflight 2026-11-24 2026-11-24T04:39:26Z host 564af5ec5358 commit 74e520b
+PASS gpu: NVIDIA A100-SXM4-80GB, hbm 87%, gemm 85% of spec, verdict OK
+PASS pcie: gen 4, width 16
+PASS torch-profiler: 5 CUDA events
+PASS nsys: 3 kernel rows in cuda_gpu_kern_sum
+PASS profilers: torch.profiler 5, nsys 3
+PASS disk: 107.1 GB free on / (repo and HF cache)
+PASS insurance: timer pid 511, vastai at /usr/local/bin/vastai
+PASS hf: Qwen/Qwen3-8B@b968826d9c46 found; Qwen/Qwen3-0.6B@c1899de289a0 found
+PASS git: HEAD 74e520b, clean
+PASS image: v0.32.0-cu129-daffd21@sha256:8deda3445007 in notes/images.md
+DECISION: GO
+notes: -
+fail:  -
+paste everything from "== preflight" to here into the chat

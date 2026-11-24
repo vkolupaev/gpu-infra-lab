@@ -1,0 +1,27 @@
+== 04:40:58 hwcheck OK: {  "gpu_name": "NVIDIA A100-SXM4-80GB",  "hbm_copy_gbps": 1767,  "bf16_gemm_tflops": 266.8,  "h2d_pinned_gbps": 16.9,  "nvidia_smi_after_load": "4, 16, 1410 MHz, 82.58 W, 400.00 W, 27, 0x0000000000000
+== 04:43:16 start results/2026-11-24-h2d-copy: python3 pytorch/h2d_copy.py --out results/2026-11-24-h2d-copy
+== 04:43:29 ok results/2026-11-24-h2d-copy
+== 04:43:29 start results/2026-11-24-prefill-decode: python3 pytorch/prefill_decode.py --model Qwen/Qwen3-8B --revision b968826d9c46dd6066d109eabc6255188de91218 --out results/2026-11-24-prefill-decode --busy
+== 04:45:15 ok results/2026-11-24-prefill-decode
+== 04:45:15 start results/2026-11-24-prefill-decode: python3 pytorch/prefill_decode.py --model Qwen/Qwen3-0.6B --revision c1899de289a04d12100db370d81485cdf75e47ca --out results/2026-11-24-prefill-decode --busy --append
+== 04:46:35 ok results/2026-11-24-prefill-decode
+== 04:46:35 start results/2026-11-24-prefill-decode-nsys: nsys profile -t cuda,nvtx --sample=none --cpuctxsw=none --cuda-graph-trace=node --capture-range=cudaProfilerApi --capture-range-end=stop -f true -o results/2026-11-24-prefill-decode-nsys/decode python3 pytorch/prefill_decode.py --model Qwen/Qwen3-8B --revision b968826d9c46dd6066d109eabc6255188de91218 --out results/2026-11-24-prefill-decode-nsys --nsys-decode
+== 04:46:48 ok results/2026-11-24-prefill-decode-nsys
+== 04:46:48 start results/2026-11-24-prefill-decode-nsys: nsys stats -f csv -o results/2026-11-24-prefill-decode-nsys/decode -r cuda_gpu_kern_sum,cuda_api_sum,cuda_kern_exec_sum,nvtx_gpu_proj_sum results/2026-11-24-prefill-decode-nsys/decode.nsys-rep
+== 04:46:50 ok results/2026-11-24-prefill-decode-nsys
+== 04:46:50 start results/2026-11-24-train-step: python3 pytorch/train_step.py --out results/2026-11-24-train-step --trace
+== 04:47:00 ok results/2026-11-24-train-step
+== 04:47:00 start results/2026-11-24-train-step-nsys: nsys profile -t cuda,nvtx --sample=none --cpuctxsw=none --cuda-graph-trace=node --capture-range=cudaProfilerApi --capture-range-end=stop -f true -o results/2026-11-24-train-step-nsys/train python3 pytorch/train_step.py --out results/2026-11-24-train-step-nsys/points --precision bf16 --steps 10 --nsys-range
+== 04:47:08 ok results/2026-11-24-train-step-nsys
+== 04:47:08 start results/2026-11-24-train-step-nsys: nsys stats -f csv -o results/2026-11-24-train-step-nsys/train -r nvtx_gpu_proj_sum,cuda_gpu_kern_sum,cuda_gpu_mem_time_sum results/2026-11-24-train-step-nsys/train.nsys-rep
+== 04:47:08 ok results/2026-11-24-train-step-nsys
+== 04:47:08 start debt N: bench.py, C=8, random_range_ratio 0.5
+== 04:49:59 ok debt N
+== 04:49:59 done. On the laptop: copy results/ and experiments/ back, then DESTROY the instance.
+== note: concurrent find/grep on the host 04:45:17-04:46:26 overlapped the
+== note:   Qwen3-0.6B prefill-decode step (04:45:15-04:46:35); points kept as is.
+== note: 04:52:33 rerun of the Qwen3-0.6B prefill-decode step without load into
+== note:   results/2026-11-24-prefill-decode-06-rerun; results/runs.jsonl was
+== note:   stashed during the rerun, so the rerun points record git.dirty = false.
+== note: vllm 0.32.0 --random-range-ratio checked in the installed source
+== note:   (benchmarks/datasets/utils.py get_sampling_params) before debt N.
