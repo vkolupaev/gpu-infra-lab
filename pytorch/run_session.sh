@@ -29,6 +29,15 @@ NSYS=(nsys profile -t cuda,nvtx --sample=none --cpuctxsw=none --cuda-graph-trace
 
 python3 scripts/hwcheck.py > "$S/hwcheck.json"
 nvidia-smi -q > "$S/nvidia-smi-q.txt"
+# Topology and GPU identity: a Vast machine_id is a server, not a GPU, and h2d depends on the slot's NUMA node
+nvidia-smi topo -m > "$S/nvidia-smi-topo.txt" 2>&1 || true
+{ lscpu; numactl -H; } > "$S/lscpu.txt" 2>&1 || true
+ID=$(nvidia-smi --query-gpu=serial,pci.bus_id,uuid,driver_version --format=csv,noheader 2>&1 | head -n 1) || true
+BUS=$(cut -d, -f2 <<< "$ID" | tr -d ' ' | tail -c 13 | tr 'A-F' 'a-f')
+log "gpu identity: $ID, numa_node=$(cat "/sys/bus/pci/devices/$BUS/numa_node" 2>/dev/null || echo unknown)"
+LINK=$(python3 -c "import json; print(json.load(open('$S/hwcheck.json')).get('nvidia_smi_after_load', ''))" 2>/dev/null) || true
+IFS=', ' read -r GEN WIDTH _ <<< "$LINK"
+[ "$GEN $WIDTH" = "4 16" ] || log "WARNING: PCIe link is gen ${GEN:-?} x${WIDTH:-?}, not Gen4 x16 - h2d-copy is in another regime"
 python3 -c "import json,sys; v=json.load(open('$S/hwcheck.json')).get('verdict'); sys.exit(v != 'OK')" ||
   { log "hwcheck verdict is not OK: destroy the instance, take another host"; exit 1; }
 log "hwcheck OK: $(tr -d '\n' < "$S/hwcheck.json" | cut -c1-200)"
